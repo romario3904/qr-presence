@@ -282,6 +282,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      {/* LE ROUTER DOIT ÊTRE ICI pour que Routes/Route/Navigate fonctionnent */}
       <Router>
         <div className="App">
           {user && <CustomNavbar user={user} onLogout={handleLogout} />}

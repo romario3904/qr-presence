@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 
 // Import CSS
@@ -10,12 +9,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 
 // Gestion des erreurs de ressources (fonts, images, etc.)
 window.addEventListener('error', (event) => {
-  // Ignorer les erreurs 404 sur les fonts et autres assets pour éviter la pollution de la console
   if (event.target && (event.target.tagName === 'LINK' || event.target.tagName === 'IMG' || event.target.tagName === 'SCRIPT')) {
     const src = event.target.href || event.target.src
+    // Ignorer les erreurs de ressources non critiques
     if (src && (src.includes('.woff') || src.includes('.woff2') || src.includes('favicon'))) {
       event.preventDefault()
-      console.warn('Resource not found:', src)
+      console.warn('Resource not found (non-critical):', src)
       return false
     }
   }
@@ -32,8 +31,7 @@ const root = ReactDOM.createRoot(rootElement)
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    {/* PAS de Router ici - Il est déjà dans App.jsx */}
+    <App />
   </React.StrictMode>
 )
