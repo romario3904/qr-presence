@@ -1,0 +1,16 @@
+node_modules
+*.log
+.env.local
+.env.*.local
+.DS_Store
+dist
+dist-ssr
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vscode
+.idea
+.git
+*.md

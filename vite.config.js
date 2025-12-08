@@ -1,34 +1,44 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Configuration pour Vite - Accès mobile activé
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: '0.0.0.0',  // IMPORTANT: Permet l'accès depuis le réseau local
-    open: false,       // Désactiver l'ouverture automatique
-    strictPort: true,  // Forcer le port 3000
-    cors: true,        // Activer CORS pour le développement
+    host: '0.0.0.0',
+    open: false,
+    strictPort: true,
+    cors: true,
     hmr: {
-      host: 'localhost', // Hot Module Replacement sur localhost
+      host: 'localhost',
       protocol: 'ws'
     },
     watch: {
-      usePolling: true // Meilleure détection des changements
+      usePolling: true
     },
     allowedHosts: [
       'localhost',
       '127.0.0.1',
       '192.168.43.78',
-      '.local' // Tous les domaines .local
+      '.local'
     ]
   },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true,
-    minify: 'terser'
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['bootstrap', 'react-bootstrap', 'react-icons'],
+          charts: ['recharts'],
+          utils: ['axios', 'qrcode', 'jspdf']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
   },
   publicDir: 'public',
   base: '/',
@@ -37,6 +47,7 @@ export default defineConfig({
     host: '0.0.0.0'
   },
   optimizeDeps: {
-    include: ['react', 'react-dom']
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: ['html5-qrcode']
   }
 })
