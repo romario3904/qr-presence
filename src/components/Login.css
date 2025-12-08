@@ -1,0 +1,264 @@
+/* Styles pour la version pleine écran */
+.login-fullscreen-container {
+  height: 100vh;
+  width: 100vw;
+  min-height: 100vh;
+  min-width: 100vw;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.login-fullscreen-content {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.login-fullscreen-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+}
+
+.login-fullscreen-background .shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.login-fullscreen-background .shape-1 {
+  width: 400px;
+  height: 400px;
+  top: -150px;
+  left: -150px;
+}
+
+.login-fullscreen-background .shape-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -100px;
+  right: -100px;
+}
+
+.login-fullscreen-background .shape-3 {
+  width: 200px;
+  height: 200px;
+  top: 20%;
+  right: 10%;
+}
+
+.login-fullscreen-background .shape-4 {
+  width: 150px;
+  height: 150px;
+  bottom: 20%;
+  left: 5%;
+}
+
+/* Section branding gauche */
+.login-brand-section {
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+}
+
+.login-brand-content {
+  padding: 3rem;
+  color: white;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.brand-logo {
+  width: 100px;
+  height: 100px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.features-list {
+  margin-top: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.feature-item i {
+  font-size: 1.2rem;
+}
+
+/* Section formulaire droite */
+.login-form-section {
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+  background: transparent;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 450px;
+  padding: 2rem;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 100%;
+}
+
+.login-logo {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.login-logo i {
+  color: white !important;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  border: none;
+}
+
+.login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.form-control {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  border: none;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  border-color: #667eea;
+  background: white;
+}
+
+.form-control:disabled {
+  background-color: #f8f9fa;
+  opacity: 0.7;
+}
+
+.alert {
+  border-radius: 12px;
+  border: none;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.login-brand-content {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .login-brand-section {
+    display: none !important;
+  }
+  
+  .login-form-container {
+    max-width: 400px;
+    padding: 1rem;
+  }
+  
+  .login-form-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .login-form-container {
+    padding: 0.5rem;
+  }
+  
+  .login-card .card-body {
+    padding: 2rem !important;
+  }
+  
+  .login-logo {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+  
+  .login-fullscreen-container {
+    height: 100%;
+    min-height: 100vh;
+  }
+}
+
+/* Correction pour Bootstrap */
+.container-fluid {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.row {
+  margin: 0 !important;
+}
+
+.col, [class*="col-"] {
+  padding: 0 !important;
+}

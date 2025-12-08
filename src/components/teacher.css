@@ -1,0 +1,87 @@
+/* Styles pour l'impression du QR Code */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  .print-card,
+  .print-card * {
+    visibility: visible;
+  }
+  
+  .print-card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    max-width: 500px;
+    border: 2px solid #000 !important;
+    box-shadow: none !important;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .no-print,
+  .no-print * {
+    display: none !important;
+  }
+  
+  .btn,
+  .alert,
+  .text-center.mt-4,
+  .navbar,
+  .sidebar,
+  .card-header.bg-success {
+    display: none !important;
+  }
+  
+  .card-header {
+    background: #000 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .bg-light {
+    background: #f8f9fa !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .qr-code-image {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* Styles pour l'affichage du QR code */
+.qr-code-image {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.print-card {
+  transition: all 0.3s ease;
+}
+
+.print-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+}
+
+/* Animation pour la génération */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.generating {
+  animation: pulse 1.5s ease-in-out infinite;
+}

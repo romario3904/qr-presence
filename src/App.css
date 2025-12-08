@@ -1,0 +1,153 @@
+/* App.css */
+.min-vh-100 {
+  min-height: 100vh;
+}
+
+.main-content {
+  padding-top: 20px;
+  min-height: calc(100vh - 76px);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* Amélioration des cartes */
+.card {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  border: none;
+  border-radius: 12px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
+}
+
+/* Classe spécifique pour les cartes avec effet hover */
+.hover-card {
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.hover-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+}
+
+/* Amélioration des badges */
+.badge {
+  font-weight: 500;
+  padding: 0.5em 0.75em;
+}
+
+/* Amélioration des boutons */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Amélioration des tables */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead th {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding-top: 10px;
+  }
+  
+  .display-4 {
+    font-size: 2rem;
+  }
+  
+  .display-5 {
+    font-size: 1.75rem;
+  }
+  
+  .hover-card:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Animation de fade */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Amélioration des modals */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+  border-radius: 12px 12px 0 0;
+}
+
+/* Amélioration des alertes */
+.alert {
+  border-radius: 10px;
+  border: none;
+}
+
+/* Amélioration des formulaires */
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+}
+
+/* Gradient backgrounds */
+.bg-gradient {
+  background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark, #0056b3) 100%);
+}
+
+.bg-primary.bg-gradient {
+  background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
+}
+
+.bg-success.bg-gradient {
+  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+}
+
+.bg-warning.bg-gradient {
+  background: linear-gradient(135deg, #ffc107 0%, #cc9a06 100%);
+}
+
+.bg-info.bg-gradient {
+  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
+}
+
+.bg-danger.bg-gradient {
+  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+}
