@@ -26,7 +26,7 @@ function Login({ onLogin, onShowRegister }) {
     setError('')
 
     try {
-      const response = await axios.post('http://localhost:3002/api/auth/login', formData)
+      const response = await axios.post('https://qr-presence-api.onrender.com/api/auth/login', formData)
       
       if (response.data.success && response.data.user && response.data.token) {
         onLogin(response.data.user, response.data.token)

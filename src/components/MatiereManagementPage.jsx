@@ -20,7 +20,7 @@ function MatiereManagementPage({ user }) {
   })
 
   // Configuration API - CORRIGÉ : utiliser "matiere" au singulier
-  const API_BASE_URL = 'http://localhost:3002/api'
+  const API_BASE_URL = 'https://qr-presence-api.onrender.com/api'
 
   useEffect(() => {
     fetchMatieres()

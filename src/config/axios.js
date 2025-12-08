@@ -5,7 +5,7 @@ import axios from 'axios';
 const getApiBaseUrl = () => {
   // Méthode 1: Vérifier si c'est un environnement de développement
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'http://localhost:3002/api';
+    return 'https://qr-presence-api.onrender.com/api';
   }
   // Méthode 2: Pour la production, utiliser le même domaine
   else {

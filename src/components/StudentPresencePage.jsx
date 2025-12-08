@@ -341,7 +341,7 @@ function StudentPresencePage({ user }) {
             setErrorDetails({
               status: 503,
               message: apiError.message || 'Service temporairement indisponible.',
-              solution: 'Vérifiez que le serveur backend est démarré sur http://localhost:3002'
+              solution: 'Vérifiez que le serveur backend est démarré sur https://qr-presence-api.onrender.com'
             })
           } else {
             setError('Erreur réseau ou serveur inaccessible.')
@@ -612,7 +612,7 @@ function StudentPresencePage({ user }) {
               </p>
               <p className="mb-0">
                 <i className="bi bi-server me-1"></i>
-                URL API: http://localhost:3002/api
+                URL API: https://qr-presence-api.onrender.com/api
               </p>
             </div>
           </div>
