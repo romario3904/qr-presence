@@ -10,6 +10,22 @@ const api = axios.create({
   timeout: 15000
 })
 
+// ✅ AJOUT: Configuration pour corriger l'encodage
+api.defaults.transformRequest = [(data) => {
+  if (data && typeof data === 'object' && !(data instanceof FormData)) {
+    return JSON.stringify(data)
+  }
+  return data
+}]
+
+api.defaults.transformResponse = [(data) => {
+  try {
+    return JSON.parse(data)
+  } catch {
+    return data
+  }
+}]
+
 // Configuration des tentatives de reconnection
 const MAX_RETRIES = 2
 const RETRY_DELAY = 1000
@@ -67,6 +83,13 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
     
+    // ✅ AJOUT: Log pour debug l'encodage
+    if (config.data && typeof config.data === 'string') {
+      console.log('📤 Données encodées (string):', config.data.substring(0, 100) + '...')
+    } else if (config.data) {
+      console.log('📤 Données encodées (object):', config.data)
+    }
+    
     // Empêcher le cache pour les requêtes GET
     if (config.method?.toLowerCase() === 'get') {
       config.params = {
@@ -98,6 +121,16 @@ api.interceptors.response.use(
         error = retryError
       }
     }
+    
+    // ✅ AJOUT: Log détaillé pour debug
+    console.error('📛 Erreur API détaillée:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      message: error.message,
+      dataSent: error.config?.data,
+      responseData: error.response?.data
+    })
     
     // Gestion des erreurs spécifiques
     if (error.response) {
@@ -141,6 +174,12 @@ api.interceptors.response.use(
             error.config.url = correctedUrl
             return api.request(error.config)
           }
+          break
+          
+        case 500:
+          // ✅ AJOUT: Gestion spécifique des erreurs 500
+          error.message = 'Erreur serveur interne. Le backend a un problème.'
+          error.isServerError = true
           break
       }
     } else if (!error.response && error.code === 'ERR_NETWORK') {

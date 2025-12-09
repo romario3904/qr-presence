@@ -143,10 +143,10 @@ function Register({ onLogin, onShowLogin }) {
     try {
       // Préparer les données selon le rôle
       let submitData = {
-        nom: formData.nom,
-        prenom: formData.prenom,
-        email: formData.email,
-        matricule: formData.matricule,
+        nom: formData.nom.trim(),
+        prenom: formData.prenom.trim(),
+        email: formData.email.trim().toLowerCase(),
+        matricule: formData.matricule.trim(),
         mot_de_passe: formData.mot_de_passe,
         role: formData.role
       }
@@ -162,12 +162,24 @@ function Register({ onLogin, onShowLogin }) {
         submitData.parcours_enseignes = formData.parcours_enseignes
       }
 
+      // ✅ AJOUT: Log pour vérifier les données avant envoi
+      console.log('📤 Données préparées pour envoi:', submitData)
+      console.log('📤 JSON stringifié:', JSON.stringify(submitData))
+      
       const response = await api.post('/auth/register', submitData)
       onLogin(response.data.user, response.data.token)
     } catch (error) {
-      console.error('Erreur d\'inscription:', error);
+      console.error('Erreur d\'inscription complète:', error)
+      
+      // ✅ AMÉLIORATION: Gestion détaillée des erreurs
       if (error.response?.status === 500) {
-        setError('Service temporairement indisponible')
+        setError('Erreur serveur (500). Le backend a un problème. Veuillez réessayer plus tard ou contacter l\'administrateur.')
+      } else if (error.response?.status === 400) {
+        setError('Données invalides. Vérifiez que tous les champs sont correctement remplis.')
+      } else if (error.code === 'ERR_NETWORK') {
+        setError('Impossible de joindre le serveur. Vérifiez votre connexion Internet.')
+      } else if (error.isServerError) {
+        setError('Problème serveur. Le backend ne fonctionne pas correctement.')
       } else {
         setError(error.response?.data?.message || 'Erreur lors de l\'inscription. Veuillez réessayer.')
       }
@@ -183,6 +195,20 @@ function Register({ onLogin, onShowLogin }) {
         {fallback && <span className="ms-1">{fallback}</span>}
       </>
     )
+  }
+
+  // ✅ AJOUT: Fonction de test pour debug
+  const testBackendConnection = async () => {
+    try {
+      console.log('🧪 Test connexion backend...')
+      const response = await fetch('https://qr-presence-api.onrender.com/api/health')
+      const data = await response.json()
+      console.log('✅ Health check:', data)
+      alert(`Backend status: ${response.ok ? 'OK' : 'ERROR'}\nMessage: ${data.message || 'No message'}`)
+    } catch (error) {
+      console.error('❌ Test échoué:', error)
+      alert('Backend inaccessible. Vérifiez que le serveur est démarré.')
+    }
   }
 
   return (
@@ -222,6 +248,17 @@ function Register({ onLogin, onShowLogin }) {
                   <span className="text-white">Interface intuitive</span>
                 </div>
               </div>
+              
+              {/* ✅ AJOUT: Bouton de test temporaire */}
+              <Button 
+                variant="outline-light" 
+                size="sm" 
+                className="mt-4"
+                onClick={testBackendConnection}
+              >
+                <Icon name="wifi" className="me-2" />
+                Tester connexion backend
+              </Button>
             </div>
           </Col>
 
