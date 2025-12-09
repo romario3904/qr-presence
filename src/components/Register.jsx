@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { Form, Button, Card, Alert, Container, Row, Col } from 'react-bootstrap'
 import api from '../apis'
@@ -102,6 +101,12 @@ function Register({ onLogin, onShowLogin }) {
   const handleSubmit = async (e) => {
     const form = e.currentTarget
     e.preventDefault()
+    
+    // ✅ AJOUT: Vérifier la connexion Internet
+    if (!navigator.onLine) {
+      setError('❌ Pas de connexion Internet. Vérifiez votre WiFi/Données mobiles.')
+      return
+    }
     
     if (form.checkValidity() === false) {
       e.stopPropagation()

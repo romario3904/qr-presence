@@ -144,7 +144,8 @@ api.interceptors.response.use(
           break
       }
     } else if (!error.response && error.code === 'ERR_NETWORK') {
-      error.message = 'Serveur inaccessible. Vérifiez que le backend est démarré.'
+      // ✅ MODIFICATION: Message d'erreur amélioré
+      error.message = 'Serveur inaccessible. Vérifiez: 1) Votre connexion Internet 2) Que le backend est démarré.'
       error.isNetworkError = true
     }
     
@@ -317,4 +318,3 @@ export const apiHelper = {
 }
 
 export default api
-
