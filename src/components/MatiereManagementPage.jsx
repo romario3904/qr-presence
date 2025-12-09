@@ -19,133 +19,171 @@ function MatiereManagementPage({ user }) {
     parcours_enseignee: ''
   })
 
-  // Configuration API - CORRIGÉ : utiliser "matiere" au singulier
+  // Configuration API
   const API_BASE_URL = 'https://qr-presence-api.onrender.com/api'
 
   useEffect(() => {
     fetchMatieres()
   }, [])
 
+  const isTokenExpired = (token) => {
+    if (!token) return true;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000;
+      return Date.now() >= expirationTime;
+    } catch (error) {
+      return true;
+    }
+  }
+
+  const handleTokenError = () => {
+    localStorage.removeItem('token');
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 2000);
+  }
+
   const fetchMatieres = async () => {
     try {
-      setLoading(true)
-      setError('')
-      
+      setLoading(true);
+      setError('');
+
+      // Vérifier le token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Token d\'authentification manquant. Veuillez vous reconnecter.');
+      }
+
+      if (isTokenExpired(token)) {
+        throw new Error('Votre session a expiré. Veuillez vous reconnecter.');
+      }
+
+      console.log('Tentative de récupération des matières avec token...');
+
       // Ajout d'un timeout customisé
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      
-      let response
-      const userId = user?.id || user?.id_utilisateur
-      
-      // CORRIGÉ : Utiliser la route correcte /api/matiere
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      let response;
       try {
         response = await fetch(`${API_BASE_URL}/matiere`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${token}`
           },
           signal: controller.signal
-        })
-        
+        });
+
         if (!response.ok && response.status !== 404) {
-          throw new Error(`Erreur ${response.status}: ${response.statusText}`)
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
         }
-        
+
       } catch (fetchError) {
-        console.error('Erreur fetch matières:', fetchError)
-        throw fetchError
+        console.error('Erreur fetch matières:', fetchError);
+        throw fetchError;
       }
-      
-      clearTimeout(timeoutId)
-      
+
+      clearTimeout(timeoutId);
+
+      // Vérifier les erreurs d'authentification
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+      }
+
       // Vérifier si la réponse est du JSON
-      const contentType = response.headers.get('content-type')
+      const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        console.error('Réponse non-JSON reçue:', text.substring(0, 200))
-        throw new Error('Le serveur a retourné une réponse non-JSON. Vérifiez la configuration de l\'API.')
+        const text = await response.text();
+        console.error('Réponse non-JSON reçue:', text.substring(0, 200));
+        throw new Error('Le serveur a retourné une réponse non-JSON. Vérifiez la configuration de l\'API.');
       }
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           // Si 404, c'est normal pour une nouvelle installation sans données
-          console.log('Aucune matière trouvée, tableau vide')
-          setMatieres([])
-          return
+          console.log('Aucune matière trouvée, tableau vide');
+          setMatieres([]);
+          return;
         }
-        
+
         try {
-          const errorData = await response.json()
-          throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`)
+          const errorData = await response.json();
+          throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
         } catch (jsonError) {
-          throw new Error(`Erreur ${response.status}: ${response.statusText}`)
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
         }
       }
-      
-      const data = await response.json()
-      console.log('Données reçues:', data)
-      
+
+      const data = await response.json();
+      console.log('Données reçues:', data);
+
       // Vérifier la structure des données
-      let matieresData = []
+      let matieresData = [];
       if (Array.isArray(data)) {
         // Format attendu : tableau de matières
-        matieresData = data
+        matieresData = data;
       } else if (data && data.matieres && Array.isArray(data.matieres)) {
         // Format API : { success: true, count: X, matieres: [...] }
-        matieresData = data.matieres
+        matieresData = data.matieres;
       } else if (data && data.matiere) {
         // Format alternatif : { matiere: [...] }
-        matieresData = Array.isArray(data.matiere) ? data.matiere : [data.matiere]
+        matieresData = Array.isArray(data.matiere) ? data.matiere : [data.matiere];
       } else if (data && data.data && Array.isArray(data.data)) {
         // Format alternatif : { data: [...] }
-        matieresData = data.data
+        matieresData = data.data;
       } else {
-        console.warn('Structure de données inattendue, utilisation comme tableau:', data)
-        matieresData = Array.isArray(data) ? data : []
+        console.warn('Structure de données inattendue, utilisation comme tableau:', data);
+        matieresData = Array.isArray(data) ? data : [];
       }
-      
-      setMatieres(matieresData)
-      
+
+      setMatieres(matieresData);
+
     } catch (error) {
-      console.error('Erreur récupération matières:', error)
-      
-      if (error.name === 'AbortError') {
-        setError('La requête a expiré. Vérifiez que le serveur backend est en cours d\'exécution.')
+      console.error('Erreur récupération matières:', error);
+
+      if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
+        setError(`Erreur d'authentification: ${error.message}`);
+        handleTokenError();
+      } else if (error.name === 'AbortError') {
+        setError('La requête a expiré. Vérifiez que le serveur backend est en cours d\'exécution.');
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution sur le port 3002.')
+        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.');
       } else if (error.message.includes('non-JSON')) {
-        setError('Le serveur retourne une réponse non-JSON. Vérifiez que l\'API est correctement configurée.')
+        setError('Le serveur retourne une réponse non-JSON. Vérifiez que l\'API est correctement configurée.');
       } else if (error.message.includes('404')) {
         // 404 est acceptable si aucune matière n'existe
-        console.log('Aucune matière trouvée (404)')
-        setMatieres([])
+        console.log('Aucune matière trouvée (404)');
+        setMatieres([]);
+      } else if (error.message.includes('401') || error.message.includes('403')) {
+        setError('Accès non autorisé. Veuillez vous reconnecter.');
+        handleTokenError();
       } else {
-        setError(`Erreur lors de la récupération des matières: ${error.message}`)
+        setError(`Erreur lors de la récupération des matières: ${error.message}`);
       }
-      
+
       // En cas d'erreur, laisser le tableau vide
-      setMatieres([])
+      setMatieres([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   // Options pour les menus déroulants
-  const niveauOptions = ['L1', 'L2', 'L3', 'M1', 'M2']
-  const mentionOptions = ['Informatique', 'Intelligence Artificielle', 'Expertise Digitale']
-  
+  const niveauOptions = ['L1', 'L2', 'L3', 'M1', 'M2'];
+  const mentionOptions = ['Informatique', 'Intelligence Artificielle', 'Expertise Digitale'];
+
   // Parcours par mention
   const parcoursByMention = {
     'Informatique': ['GB', 'IG', 'ASR'],
     'Intelligence Artificielle': ['GID', 'OCC'],
     'Expertise Digitale': ['MDI', 'ASI']
-  }
+  };
 
   const handleOpenModal = (matiere = null) => {
     if (matiere) {
-      setEditingMatiere(matiere)
+      setEditingMatiere(matiere);
       setFormData({
         nom_matiere: matiere.nom_matiere || '',
         code_matiere: matiere.code_matiere || '',
@@ -154,9 +192,9 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: matiere.niveau_enseignee || '',
         mention_enseignee: matiere.mention_enseignee || '',
         parcours_enseignee: matiere.parcours_enseignee || ''
-      })
+      });
     } else {
-      setEditingMatiere(null)
+      setEditingMatiere(null);
       setFormData({
         nom_matiere: '',
         code_matiere: '',
@@ -165,17 +203,17 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: '',
         mention_enseignee: '',
         parcours_enseignee: ''
-      })
+      });
     }
-    setShowModal(true)
-    setFormErrors({})
-  }
+    setShowModal(true);
+    setFormErrors({});
+  };
 
   const handleCloseModal = () => {
-    setShowModal(false)
-    setEditingMatiere(null)
-    setFormErrors({})
-  }
+    setShowModal(false);
+    setEditingMatiere(null);
+    setFormErrors({});
+  };
 
   // Gérer le changement de mention pour mettre à jour les parcours disponibles
   const handleMentionChange = (mention) => {
@@ -183,44 +221,52 @@ function MatiereManagementPage({ user }) {
       ...formData,
       mention_enseignee: mention,
       parcours_enseignee: '' // Réinitialiser le parcours lorsque la mention change
-    }
-    setFormData(updatedFormData)
-  }
+    };
+    setFormData(updatedFormData);
+  };
 
   const validateForm = () => {
-    const errors = {}
-    if (!formData.nom_matiere.trim()) errors.nom_matiere = 'Le nom est requis'
-    if (!formData.code_matiere.trim()) errors.code_matiere = 'Le code est requis'
+    const errors = {};
+    if (!formData.nom_matiere.trim()) errors.nom_matiere = 'Le nom est requis';
+    if (!formData.code_matiere.trim()) errors.code_matiere = 'Le code est requis';
     if (formData.credit && (isNaN(formData.credit) || formData.credit < 0)) {
-      errors.credit = 'Le crédit doit être un nombre positif'
+      errors.credit = 'Le crédit doit être un nombre positif';
     }
-    
+
     // Validation des parcours selon la mention
     if (formData.mention_enseignee && formData.parcours_enseignee) {
-      const parcoursValides = parcoursByMention[formData.mention_enseignee] || []
+      const parcoursValides = parcoursByMention[formData.mention_enseignee] || [];
       if (!parcoursValides.includes(formData.parcours_enseignee)) {
-        errors.parcours_enseignee = `Pour la mention "${formData.mention_enseignee}", les parcours valides sont: ${parcoursValides.join(', ')}`
+        errors.parcours_enseignee = `Pour la mention "${formData.mention_enseignee}", les parcours valides sont: ${parcoursValides.join(', ')}`;
       }
     }
-    
-    return errors
-  }
+
+    return errors;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     try {
-      setError('')
-      setSuccess('')
-      setFormErrors({})
-      
+      setError('');
+      setSuccess('');
+      setFormErrors({});
+
       // Validation
-      const errors = validateForm()
+      const errors = validateForm();
       if (Object.keys(errors).length > 0) {
-        setFormErrors(errors)
-        return
+        setFormErrors(errors);
+        return;
       }
-      
+
+      // Vérifier le token avant l'envoi
+      const token = localStorage.getItem('token');
+      if (!token || isTokenExpired(token)) {
+        setError('Votre session a expiré. Veuillez vous reconnecter.');
+        handleTokenError();
+        return;
+      }
+
       // Préparation des données pour l'API
       const matiereData = {
         nom_matiere: formData.nom_matiere,
@@ -230,160 +276,191 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: formData.niveau_enseignee || null,
         mention_enseignee: formData.mention_enseignee || null,
         parcours_enseignee: formData.parcours_enseignee || null
-      }
-      
-      console.log('Données envoyées:', matiereData)
-      
-      let response
-      let url = editingMatiere 
+      };
+
+      console.log('Données envoyées:', matiereData);
+
+      let response;
+      let url = editingMatiere
         ? `${API_BASE_URL}/matiere/${editingMatiere.id_matiere}`
-        : `${API_BASE_URL}/matiere`
-      
+        : `${API_BASE_URL}/matiere`;
+
       // Configuration de la requête avec timeout
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       response = await fetch(url, {
         method: editingMatiere ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(matiereData),
         signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      
+      });
+
+      clearTimeout(timeoutId);
+
+      // Vérifier les erreurs d'authentification
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+      }
+
       // Vérifier le type de contenu
-      const contentType = response.headers.get('content-type')
+      const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text()
-        console.error('Réponse non-JSON:', text.substring(0, 200))
-        throw new Error('Le serveur a retourné une réponse non-JSON')
+        const text = await response.text();
+        console.error('Réponse non-JSON:', text.substring(0, 200));
+        throw new Error('Le serveur a retourné une réponse non-JSON');
       }
-      
-      const data = await response.json()
-      console.log('Réponse API:', data)
-      
+
+      const data = await response.json();
+      console.log('Réponse API:', data);
+
       if (!response.ok) {
-        throw new Error(data.message || data.error || `Erreur ${response.status}: ${response.statusText}`)
+        throw new Error(data.message || data.error || `Erreur ${response.status}: ${response.statusText}`);
       }
-      
+
       if (editingMatiere) {
-        setSuccess('Matière mise à jour avec succès')
+        setSuccess('Matière mise à jour avec succès');
         // Mettre à jour localement
-        setMatieres(prev => prev.map(m => 
-          m.id_matiere === editingMatiere.id_matiere 
-            ? { ...m, ...matiereData } 
+        setMatieres(prev => prev.map(m =>
+          m.id_matiere === editingMatiere.id_matiere
+            ? { ...m, ...matiereData }
             : m
-        ))
+        ));
       } else {
-        setSuccess('Matière créée avec succès')
+        setSuccess('Matière créée avec succès');
         // Ajouter la nouvelle matière au tableau immédiatement
         if (data && data.matiere && data.matiere.id_matiere) {
           // Format avec objet matiere complet
           const nouvelleMatiere = {
             ...data.matiere
-          }
-          setMatieres(prev => [...prev, nouvelleMatiere])
+          };
+          setMatieres(prev => [...prev, nouvelleMatiere]);
         } else if (data && data.id_matiere) {
           // Format avec seulement id_matiere
           const nouvelleMatiere = {
             id_matiere: data.id_matiere,
             ...matiereData,
             date_creation: new Date().toISOString()
-          }
-          setMatieres(prev => [...prev, nouvelleMatiere])
+          };
+          setMatieres(prev => [...prev, nouvelleMatiere]);
         }
       }
-      
-      handleCloseModal()
-      
+
+      handleCloseModal();
+
       // Rafraîchir la liste après un délai pour s'assurer que les données sont à jour
       setTimeout(() => {
-        fetchMatieres()
-      }, 500)
-      
+        fetchMatieres();
+      }, 500);
+
     } catch (error) {
-      console.error('Erreur sauvegarde:', error)
-      if (error.name === 'AbortError') {
-        setError('La requête a expiré. Vérifiez votre connexion réseau.')
+      console.error('Erreur sauvegarde:', error);
+      
+      if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
+        setError(`Erreur d'authentification: ${error.message}`);
+        handleTokenError();
+      } else if (error.name === 'AbortError') {
+        setError('La requête a expiré. Vérifiez votre connexion réseau.');
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.')
+        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.');
       } else if (error.message.includes('DOCTYPE') || error.message.includes('html')) {
-        setError('Le serveur retourne du HTML au lieu de JSON. Vérifiez la configuration de l\'API backend.')
+        setError('Le serveur retourne du HTML au lieu de JSON. Vérifiez la configuration de l\'API backend.');
+      } else if (error.message.includes('401') || error.message.includes('403')) {
+        setError('Accès non autorisé. Veuillez vous reconnecter.');
+        handleTokenError();
       } else {
-        setError(error.message || 'Erreur lors de la sauvegarde')
+        setError(error.message || 'Erreur lors de la sauvegarde');
       }
     }
-  }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) {
-      return
+      return;
     }
 
     try {
-      setError('')
-      
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-      
+      setError('');
+
+      // Vérifier le token avant suppression
+      const token = localStorage.getItem('token');
+      if (!token || isTokenExpired(token)) {
+        setError('Votre session a expiré. Veuillez vous reconnecter.');
+        handleTokenError();
+        return;
+      }
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch(`${API_BASE_URL}/matiere/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         signal: controller.signal
-      })
-      
-      clearTimeout(timeoutId)
-      
+      });
+
+      clearTimeout(timeoutId);
+
+      // Vérifier les erreurs d'authentification
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+      }
+
       if (!response.ok) {
         if (response.status === 404) {
           // Si la matière n'existe pas déjà, considérer comme supprimée
-          setSuccess('Matière supprimée')
-          setMatieres(prev => prev.filter(m => m.id_matiere !== id))
-          return
+          setSuccess('Matière supprimée');
+          setMatieres(prev => prev.filter(m => m.id_matiere !== id));
+          return;
         }
-        
-        const errorData = await response.json()
-        throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`)
+
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
       }
-      
-      setSuccess('Matière supprimée avec succès')
+
+      setSuccess('Matière supprimée avec succès');
       // Supprimer localement
-      setMatieres(prev => prev.filter(m => m.id_matiere !== id))
-      
+      setMatieres(prev => prev.filter(m => m.id_matiere !== id));
+
     } catch (error) {
-      console.error('Erreur suppression:', error)
-      if (error.name === 'AbortError') {
-        setError('La requête de suppression a expiré.')
+      console.error('Erreur suppression:', error);
+      if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
+        setError(`Erreur d'authentification: ${error.message}`);
+        handleTokenError();
+      } else if (error.name === 'AbortError') {
+        setError('La requête de suppression a expiré.');
       } else if (error.message.includes('Failed to fetch')) {
-        setError('Impossible de se connecter au serveur.')
+        setError('Impossible de se connecter au serveur.');
+      } else if (error.message.includes('401') || error.message.includes('403')) {
+        setError('Accès non autorisé. Veuillez vous reconnecter.');
+        handleTokenError();
       } else {
-        setError('Erreur lors de la suppression: ' + error.message)
+        setError('Erreur lors de la suppression: ' + error.message);
       }
     }
-  }
+  };
 
   // Formater la date pour l'affichage
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A'
+    if (!dateString) return 'N/A';
     try {
-      const date = new Date(dateString)
+      const date = new Date(dateString);
       return date.toLocaleDateString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      })
+      });
     } catch (error) {
-      return 'Date invalide'
+      return 'Date invalide';
     }
-  }
+  };
 
   return (
     <Container className="my-4">
@@ -400,12 +477,28 @@ function MatiereManagementPage({ user }) {
 
       {/* Alertes */}
       {error && (
-        <Alert variant="danger" dismissible onClose={() => setError('')}>
+        <Alert variant={error.includes('authentification') ? 'warning' : 'danger'} dismissible onClose={() => setError('')}>
           <Alert.Heading>
-            <i className="bi bi-exclamation-triangle-fill me-2"></i>
-            Erreur
+            <i className={`bi ${error.includes('authentification') ? 'bi-exclamation-triangle-fill' : 'bi-exclamation-triangle-fill'} me-2`}></i>
+            {error.includes('authentification') ? 'Problème d\'authentification' : 'Erreur'}
           </Alert.Heading>
           <p className="mb-0">{error}</p>
+          {error.includes('authentification') && (
+            <div className="mt-2">
+              <p className="mb-2 small">Redirection vers la page de connexion...</p>
+              <Button
+                variant="outline-warning"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('token');
+                  window.location.href = '/login';
+                }}
+              >
+                <i className="bi bi-box-arrow-in-right me-1"></i>
+                Se reconnecter maintenant
+              </Button>
+            </div>
+          )}
           {error.includes('localhost:3002') && (
             <div className="mt-2 small">
               <strong>Solution rapide :</strong>
@@ -583,9 +676,9 @@ function MatiereManagementPage({ user }) {
                       </td>
                       <td>
                         {matiere.mention_enseignee ? (
-                          <Badge bg={matiere.mention_enseignee === 'Informatique' ? 'success' : 
-                                   matiere.mention_enseignee === 'Intelligence Artificielle' ? 'warning' : 
-                                   'info'}>
+                          <Badge bg={matiere.mention_enseignee === 'Informatique' ? 'success' :
+                            matiere.mention_enseignee === 'Intelligence Artificielle' ? 'warning' :
+                              'info'}>
                             {matiere.mention_enseignee}
                           </Badge>
                         ) : (
@@ -606,16 +699,16 @@ function MatiereManagementPage({ user }) {
                       </td>
                       <td>
                         <div className="d-flex gap-2">
-                          <Button 
-                            variant="outline-primary" 
+                          <Button
+                            variant="outline-primary"
                             size="sm"
                             onClick={() => handleOpenModal(matiere)}
                             title="Modifier"
                           >
                             <i className="bi bi-pencil"></i>
                           </Button>
-                          <Button 
-                            variant="outline-danger" 
+                          <Button
+                            variant="outline-danger"
                             size="sm"
                             onClick={() => handleDelete(matiere.id_matiere)}
                             title="Supprimer"
@@ -652,7 +745,7 @@ function MatiereManagementPage({ user }) {
                   <Form.Control
                     type="text"
                     value={formData.nom_matiere}
-                    onChange={(e) => setFormData({...formData, nom_matiere: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, nom_matiere: e.target.value })}
                     placeholder="Ex: Mathématiques"
                     required
                     isInvalid={!!formErrors.nom_matiere}
@@ -670,7 +763,7 @@ function MatiereManagementPage({ user }) {
                   <Form.Control
                     type="text"
                     value={formData.code_matiere}
-                    onChange={(e) => setFormData({...formData, code_matiere: e.target.value.toUpperCase()})}
+                    onChange={(e) => setFormData({ ...formData, code_matiere: e.target.value.toUpperCase() })}
                     placeholder="Ex: MATH101"
                     required
                     isInvalid={!!formErrors.code_matiere}
@@ -681,7 +774,7 @@ function MatiereManagementPage({ user }) {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             <Form.Group className="mb-3">
               <Form.Label>
                 Description
@@ -690,11 +783,11 @@ function MatiereManagementPage({ user }) {
                 as="textarea"
                 rows={3}
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Description de la matière..."
               />
             </Form.Group>
-            
+
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -704,7 +797,7 @@ function MatiereManagementPage({ user }) {
                   <Form.Control
                     type="number"
                     value={formData.credit}
-                    onChange={(e) => setFormData({...formData, credit: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, credit: e.target.value })}
                     placeholder="Ex: 6"
                     min="0"
                     step="1"
@@ -725,7 +818,7 @@ function MatiereManagementPage({ user }) {
                   </Form.Label>
                   <Form.Select
                     value={formData.niveau_enseignee}
-                    onChange={(e) => setFormData({...formData, niveau_enseignee: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, niveau_enseignee: e.target.value })}
                   >
                     <option value="">Sélectionner un niveau</option>
                     {niveauOptions.map(niveau => (
@@ -764,12 +857,12 @@ function MatiereManagementPage({ user }) {
                   </Form.Label>
                   <Form.Select
                     value={formData.parcours_enseignee}
-                    onChange={(e) => setFormData({...formData, parcours_enseignee: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, parcours_enseignee: e.target.value })}
                     disabled={!formData.mention_enseignee}
                     isInvalid={!!formErrors.parcours_enseignee}
                   >
                     <option value="">Sélectionner un parcours</option>
-                    {formData.mention_enseignee && parcoursByMention[formData.mention_enseignee] && 
+                    {formData.mention_enseignee && parcoursByMention[formData.mention_enseignee] &&
                       parcoursByMention[formData.mention_enseignee].map(parcours => (
                         <option key={parcours} value={parcours}>{parcours}</option>
                       ))
@@ -786,7 +879,7 @@ function MatiereManagementPage({ user }) {
                 </Form.Group>
               </Col>
             </Row>
-            
+
             {editingMatiere && (
               <div className="alert alert-info">
                 <i className="bi bi-info-circle me-2"></i>
@@ -818,6 +911,7 @@ function MatiereManagementPage({ user }) {
           <li>La date de création est automatiquement générée</li>
           <li>Route API : <code>/api/matiere</code></li>
           <li>Token JWT requis pour l'authentification</li>
+          <li>La session expire automatiquement après un certain temps</li>
           <li><strong>Mentions disponibles :</strong> Informatique, Intelligence Artificielle, Expertise Digitale</li>
           <li><strong>Parcours par mention :</strong>
             <ul className="mt-1 mb-0">
@@ -829,7 +923,7 @@ function MatiereManagementPage({ user }) {
         </ul>
       </div>
     </Container>
-  )
+  );
 }
 
-export default MatiereManagementPage
+export default MatiereManagementPage;
