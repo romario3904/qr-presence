@@ -26,46 +26,102 @@ function MatiereManagementPage({ user }) {
     fetchMatieres()
   }, [])
 
-  const isTokenExpired = (token) => {
-    if (!token) return true;
+  // Fonction pour décoder le token JWT (base64 URL-safe)
+  const base64UrlDecode = (str) => {
+    // Remplacer les caractères URL-safe
+    str = str.replace(/-/g, '+').replace(/_/g, '/')
+    
+    // Ajouter le padding si nécessaire
+    const padding = str.length % 4
+    if (padding) {
+      str += '='.repeat(4 - padding)
+    }
+    
+    // Décoder
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const expirationTime = payload.exp * 1000;
-      return Date.now() >= expirationTime;
+      return decodeURIComponent(
+        atob(str)
+          .split('')
+          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join('')
+      )
     } catch (error) {
-      return true;
+      console.error('Erreur de décodage base64:', error)
+      return ''
+    }
+  }
+
+  const isTokenExpired = (token) => {
+    if (!token) return true
+    try {
+      // Séparer les parties du token JWT
+      const parts = token.split('.')
+      if (parts.length !== 3) {
+        console.error('Token JWT invalide: pas 3 parties')
+        return true
+      }
+      
+      // Décoder la payload (partie 2)
+      const payloadBase64 = parts[1]
+      const payloadJson = base64UrlDecode(payloadBase64)
+      if (!payloadJson) {
+        console.error('Impossible de décoder la payload du token')
+        return true
+      }
+      
+      const payload = JSON.parse(payloadJson)
+      
+      // Vérifier l'expiration
+      if (!payload.exp) {
+        console.warn('Token sans date d\'expiration')
+        return false // Considérer comme valide si pas d'exp
+      }
+      
+      const expirationTime = payload.exp * 1000
+      const isExpired = Date.now() >= expirationTime
+      console.log('Token expiré?', isExpired, 'Expire le:', new Date(expirationTime))
+      return isExpired
+    } catch (error) {
+      console.error('Erreur de décodage du token:', error)
+      return true
     }
   }
 
   const handleTokenError = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem('token')
     setTimeout(() => {
-      window.location.href = '/login';
-    }, 2000);
+      window.location.href = '/login'
+    }, 2000)
   }
 
   const fetchMatieres = async () => {
     try {
-      setLoading(true);
-      setError('');
+      setLoading(true)
+      setError('')
 
       // Vérifier le token
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token')
       if (!token) {
-        throw new Error('Token d\'authentification manquant. Veuillez vous reconnecter.');
+        setError('Token d\'authentification manquant. Veuillez vous reconnecter.')
+        handleTokenError()
+        setLoading(false)
+        return
       }
 
       if (isTokenExpired(token)) {
-        throw new Error('Votre session a expiré. Veuillez vous reconnecter.');
+        setError('Votre session a expiré. Veuillez vous reconnecter.')
+        handleTokenError()
+        setLoading(false)
+        return
       }
 
-      console.log('Tentative de récupération des matières avec token...');
+      console.log('Tentative de récupération des matières avec token...')
 
       // Ajout d'un timeout customisé
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
-      let response;
+      let response
       try {
         response = await fetch(`${API_BASE_URL}/matiere`, {
           method: 'GET',
@@ -74,116 +130,120 @@ function MatiereManagementPage({ user }) {
             'Authorization': `Bearer ${token}`
           },
           signal: controller.signal
-        });
+        })
 
         if (!response.ok && response.status !== 404) {
-          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`)
         }
 
       } catch (fetchError) {
-        console.error('Erreur fetch matières:', fetchError);
-        throw fetchError;
+        console.error('Erreur fetch matières:', fetchError)
+        throw fetchError
       }
 
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
 
       // Vérifier les erreurs d'authentification
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.')
       }
 
       // Vérifier si la réponse est du JSON
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Réponse non-JSON reçue:', text.substring(0, 200));
-        throw new Error('Le serveur a retourné une réponse non-JSON. Vérifiez la configuration de l\'API.');
+        const text = await response.text()
+        console.error('Réponse non-JSON reçue:', text.substring(0, 200))
+        throw new Error('Le serveur a retourné une réponse non-JSON. Vérifiez la configuration de l\'API.')
       }
 
       if (!response.ok) {
         if (response.status === 404) {
           // Si 404, c'est normal pour une nouvelle installation sans données
-          console.log('Aucune matière trouvée, tableau vide');
-          setMatieres([]);
-          return;
+          console.log('Aucune matière trouvée, tableau vide')
+          setMatieres([])
+          return
         }
 
         try {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
+          const errorData = await response.json()
+          throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`)
         } catch (jsonError) {
-          throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+          throw new Error(`Erreur ${response.status}: ${response.statusText}`)
         }
       }
 
-      const data = await response.json();
-      console.log('Données reçues:', data);
+      const data = await response.json()
+      console.log('Données reçues:', data)
 
       // Vérifier la structure des données
-      let matieresData = [];
+      let matieresData = []
       if (Array.isArray(data)) {
         // Format attendu : tableau de matières
-        matieresData = data;
+        matieresData = data
       } else if (data && data.matieres && Array.isArray(data.matieres)) {
         // Format API : { success: true, count: X, matieres: [...] }
-        matieresData = data.matieres;
+        matieresData = data.matieres
       } else if (data && data.matiere) {
         // Format alternatif : { matiere: [...] }
-        matieresData = Array.isArray(data.matiere) ? data.matiere : [data.matiere];
+        matieresData = Array.isArray(data.matiere) ? data.matiere : [data.matiere]
       } else if (data && data.data && Array.isArray(data.data)) {
         // Format alternatif : { data: [...] }
-        matieresData = data.data;
+        matieresData = data.data
       } else {
-        console.warn('Structure de données inattendue, utilisation comme tableau:', data);
-        matieresData = Array.isArray(data) ? data : [];
+        console.warn('Structure de données inattendue, utilisation comme tableau:', data)
+        matieresData = Array.isArray(data) ? data : []
       }
 
-      setMatieres(matieresData);
+      setMatieres(matieresData)
 
     } catch (error) {
-      console.error('Erreur récupération matières:', error);
+      console.error('Erreur récupération matières:', error)
 
       if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
-        setError(`Erreur d'authentification: ${error.message}`);
-        handleTokenError();
+        setError(`Erreur d'authentification: ${error.message}`)
+        handleTokenError()
       } else if (error.name === 'AbortError') {
-        setError('La requête a expiré. Vérifiez que le serveur backend est en cours d\'exécution.');
+        setError('La requête a expiré. Vérifiez que le serveur backend est en cours d\'exécution.')
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.');
+        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.')
       } else if (error.message.includes('non-JSON')) {
-        setError('Le serveur retourne une réponse non-JSON. Vérifiez que l\'API est correctement configurée.');
+        setError('Le serveur retourne une réponse non-JSON. Vérifiez que l\'API est correctement configurée.')
       } else if (error.message.includes('404')) {
         // 404 est acceptable si aucune matière n'existe
-        console.log('Aucune matière trouvée (404)');
-        setMatieres([]);
+        console.log('Aucune matière trouvée (404)')
+        setMatieres([])
       } else if (error.message.includes('401') || error.message.includes('403')) {
-        setError('Accès non autorisé. Veuillez vous reconnecter.');
-        handleTokenError();
+        setError('Accès non autorisé. Veuillez vous reconnecter.')
+        handleTokenError()
       } else {
-        setError(`Erreur lors de la récupération des matières: ${error.message}`);
+        setError(`Erreur lors de la récupération des matières: ${error.message}`)
       }
 
       // En cas d'erreur, laisser le tableau vide
-      setMatieres([]);
+      setMatieres([])
     } finally {
-      setLoading(false);
+      try {
+        setLoading(false)
+      } catch (finalError) {
+        console.error('Erreur dans finally:', finalError)
+      }
     }
   }
 
   // Options pour les menus déroulants
-  const niveauOptions = ['L1', 'L2', 'L3', 'M1', 'M2'];
-  const mentionOptions = ['Informatique', 'Intelligence Artificielle', 'Expertise Digitale'];
+  const niveauOptions = ['L1', 'L2', 'L3', 'M1', 'M2']
+  const mentionOptions = ['Informatique', 'Intelligence Artificielle', 'Expertise Digitale']
 
   // Parcours par mention
   const parcoursByMention = {
     'Informatique': ['GB', 'IG', 'ASR'],
     'Intelligence Artificielle': ['GID', 'OCC'],
     'Expertise Digitale': ['MDI', 'ASI']
-  };
+  }
 
   const handleOpenModal = (matiere = null) => {
     if (matiere) {
-      setEditingMatiere(matiere);
+      setEditingMatiere(matiere)
       setFormData({
         nom_matiere: matiere.nom_matiere || '',
         code_matiere: matiere.code_matiere || '',
@@ -192,9 +252,9 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: matiere.niveau_enseignee || '',
         mention_enseignee: matiere.mention_enseignee || '',
         parcours_enseignee: matiere.parcours_enseignee || ''
-      });
+      })
     } else {
-      setEditingMatiere(null);
+      setEditingMatiere(null)
       setFormData({
         nom_matiere: '',
         code_matiere: '',
@@ -203,17 +263,17 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: '',
         mention_enseignee: '',
         parcours_enseignee: ''
-      });
+      })
     }
-    setShowModal(true);
-    setFormErrors({});
-  };
+    setShowModal(true)
+    setFormErrors({})
+  }
 
   const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingMatiere(null);
-    setFormErrors({});
-  };
+    setShowModal(false)
+    setEditingMatiere(null)
+    setFormErrors({})
+  }
 
   // Gérer le changement de mention pour mettre à jour les parcours disponibles
   const handleMentionChange = (mention) => {
@@ -221,50 +281,50 @@ function MatiereManagementPage({ user }) {
       ...formData,
       mention_enseignee: mention,
       parcours_enseignee: '' // Réinitialiser le parcours lorsque la mention change
-    };
-    setFormData(updatedFormData);
-  };
+    }
+    setFormData(updatedFormData)
+  }
 
   const validateForm = () => {
-    const errors = {};
-    if (!formData.nom_matiere.trim()) errors.nom_matiere = 'Le nom est requis';
-    if (!formData.code_matiere.trim()) errors.code_matiere = 'Le code est requis';
+    const errors = {}
+    if (!formData.nom_matiere.trim()) errors.nom_matiere = 'Le nom est requis'
+    if (!formData.code_matiere.trim()) errors.code_matiere = 'Le code est requis'
     if (formData.credit && (isNaN(formData.credit) || formData.credit < 0)) {
-      errors.credit = 'Le crédit doit être un nombre positif';
+      errors.credit = 'Le crédit doit être un nombre positif'
     }
 
     // Validation des parcours selon la mention
     if (formData.mention_enseignee && formData.parcours_enseignee) {
-      const parcoursValides = parcoursByMention[formData.mention_enseignee] || [];
+      const parcoursValides = parcoursByMention[formData.mention_enseignee] || []
       if (!parcoursValides.includes(formData.parcours_enseignee)) {
-        errors.parcours_enseignee = `Pour la mention "${formData.mention_enseignee}", les parcours valides sont: ${parcoursValides.join(', ')}`;
+        errors.parcours_enseignee = `Pour la mention "${formData.mention_enseignee}", les parcours valides sont: ${parcoursValides.join(', ')}`
       }
     }
 
-    return errors;
-  };
+    return errors
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
-      setError('');
-      setSuccess('');
-      setFormErrors({});
+      setError('')
+      setSuccess('')
+      setFormErrors({})
 
       // Validation
-      const errors = validateForm();
+      const errors = validateForm()
       if (Object.keys(errors).length > 0) {
-        setFormErrors(errors);
-        return;
+        setFormErrors(errors)
+        return
       }
 
       // Vérifier le token avant l'envoi
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token')
       if (!token || isTokenExpired(token)) {
-        setError('Votre session a expiré. Veuillez vous reconnecter.');
-        handleTokenError();
-        return;
+        setError('Votre session a expiré. Veuillez vous reconnecter.')
+        handleTokenError()
+        return
       }
 
       // Préparation des données pour l'API
@@ -276,18 +336,18 @@ function MatiereManagementPage({ user }) {
         niveau_enseignee: formData.niveau_enseignee || null,
         mention_enseignee: formData.mention_enseignee || null,
         parcours_enseignee: formData.parcours_enseignee || null
-      };
+      }
 
-      console.log('Données envoyées:', matiereData);
+      console.log('Données envoyées:', matiereData)
 
-      let response;
+      let response
       let url = editingMatiere
         ? `${API_BASE_URL}/matiere/${editingMatiere.id_matiere}`
-        : `${API_BASE_URL}/matiere`;
+        : `${API_BASE_URL}/matiere`
 
       // Configuration de la requête avec timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
       response = await fetch(url, {
         method: editingMatiere ? 'PUT' : 'POST',
@@ -297,104 +357,104 @@ function MatiereManagementPage({ user }) {
         },
         body: JSON.stringify(matiereData),
         signal: controller.signal
-      });
+      })
 
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
 
       // Vérifier les erreurs d'authentification
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.')
       }
 
       // Vérifier le type de contenu
-      const contentType = response.headers.get('content-type');
+      const contentType = response.headers.get('content-type')
       if (!contentType || !contentType.includes('application/json')) {
-        const text = await response.text();
-        console.error('Réponse non-JSON:', text.substring(0, 200));
-        throw new Error('Le serveur a retourné une réponse non-JSON');
+        const text = await response.text()
+        console.error('Réponse non-JSON:', text.substring(0, 200))
+        throw new Error('Le serveur a retourné une réponse non-JSON')
       }
 
-      const data = await response.json();
-      console.log('Réponse API:', data);
+      const data = await response.json()
+      console.log('Réponse API:', data)
 
       if (!response.ok) {
-        throw new Error(data.message || data.error || `Erreur ${response.status}: ${response.statusText}`);
+        throw new Error(data.message || data.error || `Erreur ${response.status}: ${response.statusText}`)
       }
 
       if (editingMatiere) {
-        setSuccess('Matière mise à jour avec succès');
+        setSuccess('Matière mise à jour avec succès')
         // Mettre à jour localement
         setMatieres(prev => prev.map(m =>
           m.id_matiere === editingMatiere.id_matiere
             ? { ...m, ...matiereData }
             : m
-        ));
+        ))
       } else {
-        setSuccess('Matière créée avec succès');
+        setSuccess('Matière créée avec succès')
         // Ajouter la nouvelle matière au tableau immédiatement
         if (data && data.matiere && data.matiere.id_matiere) {
           // Format avec objet matiere complet
           const nouvelleMatiere = {
             ...data.matiere
-          };
-          setMatieres(prev => [...prev, nouvelleMatiere]);
+          }
+          setMatieres(prev => [...prev, nouvelleMatiere])
         } else if (data && data.id_matiere) {
           // Format avec seulement id_matiere
           const nouvelleMatiere = {
             id_matiere: data.id_matiere,
             ...matiereData,
             date_creation: new Date().toISOString()
-          };
-          setMatieres(prev => [...prev, nouvelleMatiere]);
+          }
+          setMatieres(prev => [...prev, nouvelleMatiere])
         }
       }
 
-      handleCloseModal();
+      handleCloseModal()
 
       // Rafraîchir la liste après un délai pour s'assurer que les données sont à jour
       setTimeout(() => {
-        fetchMatieres();
-      }, 500);
+        fetchMatieres()
+      }, 500)
 
     } catch (error) {
-      console.error('Erreur sauvegarde:', error);
+      console.error('Erreur sauvegarde:', error)
       
       if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
-        setError(`Erreur d'authentification: ${error.message}`);
-        handleTokenError();
+        setError(`Erreur d'authentification: ${error.message}`)
+        handleTokenError()
       } else if (error.name === 'AbortError') {
-        setError('La requête a expiré. Vérifiez votre connexion réseau.');
+        setError('La requête a expiré. Vérifiez votre connexion réseau.')
       } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.');
+        setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est en cours d\'exécution.')
       } else if (error.message.includes('DOCTYPE') || error.message.includes('html')) {
-        setError('Le serveur retourne du HTML au lieu de JSON. Vérifiez la configuration de l\'API backend.');
+        setError('Le serveur retourne du HTML au lieu de JSON. Vérifiez la configuration de l\'API backend.')
       } else if (error.message.includes('401') || error.message.includes('403')) {
-        setError('Accès non autorisé. Veuillez vous reconnecter.');
-        handleTokenError();
+        setError('Accès non autorisé. Veuillez vous reconnecter.')
+        handleTokenError()
       } else {
-        setError(error.message || 'Erreur lors de la sauvegarde');
+        setError(error.message || 'Erreur lors de la sauvegarde')
       }
     }
-  };
+  }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette matière ?')) {
-      return;
+      return
     }
 
     try {
-      setError('');
+      setError('')
 
       // Vérifier le token avant suppression
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token')
       if (!token || isTokenExpired(token)) {
-        setError('Votre session a expiré. Veuillez vous reconnecter.');
-        handleTokenError();
-        return;
+        setError('Votre session a expiré. Veuillez vous reconnecter.')
+        handleTokenError()
+        return
       }
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
       const response = await fetch(`${API_BASE_URL}/matiere/${id}`, {
         method: 'DELETE',
@@ -402,65 +462,65 @@ function MatiereManagementPage({ user }) {
           'Authorization': `Bearer ${token}`
         },
         signal: controller.signal
-      });
+      })
 
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
 
       // Vérifier les erreurs d'authentification
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.');
+        throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.')
       }
 
       if (!response.ok) {
         if (response.status === 404) {
           // Si la matière n'existe pas déjà, considérer comme supprimée
-          setSuccess('Matière supprimée');
-          setMatieres(prev => prev.filter(m => m.id_matiere !== id));
-          return;
+          setSuccess('Matière supprimée')
+          setMatieres(prev => prev.filter(m => m.id_matiere !== id))
+          return
         }
 
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`);
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`)
       }
 
-      setSuccess('Matière supprimée avec succès');
+      setSuccess('Matière supprimée avec succès')
       // Supprimer localement
-      setMatieres(prev => prev.filter(m => m.id_matiere !== id));
+      setMatieres(prev => prev.filter(m => m.id_matiere !== id))
 
     } catch (error) {
-      console.error('Erreur suppression:', error);
+      console.error('Erreur suppression:', error)
       if (error.message.includes('Token') || error.message.includes('Session') || error.message.includes('authentification')) {
-        setError(`Erreur d'authentification: ${error.message}`);
-        handleTokenError();
+        setError(`Erreur d'authentification: ${error.message}`)
+        handleTokenError()
       } else if (error.name === 'AbortError') {
-        setError('La requête de suppression a expiré.');
+        setError('La requête de suppression a expiré.')
       } else if (error.message.includes('Failed to fetch')) {
-        setError('Impossible de se connecter au serveur.');
+        setError('Impossible de se connecter au serveur.')
       } else if (error.message.includes('401') || error.message.includes('403')) {
-        setError('Accès non autorisé. Veuillez vous reconnecter.');
-        handleTokenError();
+        setError('Accès non autorisé. Veuillez vous reconnecter.')
+        handleTokenError()
       } else {
-        setError('Erreur lors de la suppression: ' + error.message);
+        setError('Erreur lors de la suppression: ' + error.message)
       }
     }
-  };
+  }
 
   // Formater la date pour l'affichage
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return 'N/A'
     try {
-      const date = new Date(dateString);
+      const date = new Date(dateString)
       return date.toLocaleDateString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      });
+      })
     } catch (error) {
-      return 'Date invalide';
+      return 'Date invalide'
     }
-  };
+  }
 
   return (
     <Container className="my-4">
@@ -490,8 +550,8 @@ function MatiereManagementPage({ user }) {
                 variant="outline-warning"
                 size="sm"
                 onClick={() => {
-                  localStorage.removeItem('token');
-                  window.location.href = '/login';
+                  localStorage.removeItem('token')
+                  window.location.href = '/login'
                 }}
               >
                 <i className="bi bi-box-arrow-in-right me-1"></i>
@@ -923,7 +983,7 @@ function MatiereManagementPage({ user }) {
         </ul>
       </div>
     </Container>
-  );
+  )
 }
 
-export default MatiereManagementPage;
+export default MatiereManagementPage
