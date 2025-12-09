@@ -119,7 +119,7 @@ function MatiereManagementPage({ user }) {
 
       // Ajout d'un timeout customisé
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
 
       let response
       try {
@@ -347,7 +347,7 @@ function MatiereManagementPage({ user }) {
 
       // Configuration de la requête avec timeout
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
 
       response = await fetch(url, {
         method: editingMatiere ? 'PUT' : 'POST',
@@ -454,7 +454,7 @@ function MatiereManagementPage({ user }) {
       }
 
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
 
       const response = await fetch(`${API_BASE_URL}/matiere/${id}`, {
         method: 'DELETE',
