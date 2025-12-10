@@ -175,24 +175,24 @@ function MatiereManagementPage({ user }) {
       const data = await response.json()
       console.log('Données reçues:', data)
 
+      // ============ DÉBUT DE LA SECTION MODIFIÉE ============
       // Vérifier la structure des données
       let matieresData = []
-      if (Array.isArray(data)) {
-        // Format attendu : tableau de matières
-        matieresData = data
-      } else if (data && data.matieres && Array.isArray(data.matieres)) {
-        // Format API : { success: true, count: X, matieres: [...] }
-        matieresData = data.matieres
-      } else if (data && data.matiere) {
-        // Format alternatif : { matiere: [...] }
-        matieresData = Array.isArray(data.matiere) ? data.matiere : [data.matiere]
-      } else if (data && data.data && Array.isArray(data.data)) {
-        // Format alternatif : { data: [...] }
-        matieresData = data.data
-      } else {
-        console.warn('Structure de données inattendue, utilisation comme tableau:', data)
-        matieresData = Array.isArray(data) ? data : []
+      if (data && data.success !== false) {
+        if (Array.isArray(data.matieres)) {
+          // Format API : { success: true, count: X, matieres: [...] }
+          matieresData = data.matieres
+        } else if (Array.isArray(data)) {
+          // Format attendu : tableau de matières
+          matieresData = data
+        } else if (data.data && Array.isArray(data.data)) {
+          // Format alternatif : { data: [...] }
+          matieresData = data.data
+        }
+      } else if (data && data.message) {
+        console.warn('Message d\'erreur de l\'API:', data.message)
       }
+      // ============ FIN DE LA SECTION MODIFIÉE ============
 
       setMatieres(matieresData)
 
