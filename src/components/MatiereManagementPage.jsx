@@ -131,11 +131,6 @@ function MatiereManagementPage({ user }) {
           },
           signal: controller.signal
         })
-
-        if (!response.ok && response.status !== 404) {
-          throw new Error(`Erreur ${response.status}: ${response.statusText}`)
-        }
-
       } catch (fetchError) {
         console.error('Erreur fetch matières:', fetchError)
         throw fetchError
@@ -148,22 +143,27 @@ function MatiereManagementPage({ user }) {
         throw new Error('Session expirée ou invalide. Veuillez vous reconnecter.')
       }
 
+      // D'abord vérifier le statut 404
+      if (response.status === 404) {
+        // Si 404, c'est normal pour une nouvelle installation sans données
+        console.log('Aucune matière trouvée (404), tableau vide')
+        setMatieres([])
+        setLoading(false)
+        return
+      }
+
       // Vérifier si la réponse est du JSON
       const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
+      const isJson = contentType && contentType.includes('application/json')
+      
+      if (!isJson) {
+        // Si ce n'est pas du JSON, lire le texte
         const text = await response.text()
         console.error('Réponse non-JSON reçue:', text.substring(0, 200))
         throw new Error('Le serveur a retourné une réponse non-JSON. Vérifiez la configuration de l\'API.')
       }
 
       if (!response.ok) {
-        if (response.status === 404) {
-          // Si 404, c'est normal pour une nouvelle installation sans données
-          console.log('Aucune matière trouvée, tableau vide')
-          setMatieres([])
-          return
-        }
-
         try {
           const errorData = await response.json()
           throw new Error(errorData.message || `Erreur ${response.status}: ${response.statusText}`)
@@ -172,10 +172,10 @@ function MatiereManagementPage({ user }) {
         }
       }
 
+      // Si tout va bien, parser le JSON
       const data = await response.json()
       console.log('Données reçues:', data)
 
-      // ============ DÉBUT DE LA SECTION MODIFIÉE ============
       // Vérifier la structure des données
       let matieresData = []
       if (data && data.success !== false) {
@@ -190,9 +190,8 @@ function MatiereManagementPage({ user }) {
           matieresData = data.data
         }
       } else if (data && data.message) {
-        console.warn('Message d\'erreur de l\'API:', data.message)
+        console.warn('Message d'erreur de l\'API:', data.message)
       }
-      // ============ FIN DE LA SECTION MODIFIÉE ============
 
       setMatieres(matieresData)
 
@@ -368,7 +367,9 @@ function MatiereManagementPage({ user }) {
 
       // Vérifier le type de contenu
       const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
+      const isJson = contentType && contentType.includes('application/json')
+      
+      if (!isJson) {
         const text = await response.text()
         console.error('Réponse non-JSON:', text.substring(0, 200))
         throw new Error('Le serveur a retourné une réponse non-JSON')
