@@ -164,6 +164,11 @@ api.interceptors.response.use(
             error.response.data = { success: true, presences: [] }
             return Promise.resolve(error.response)
           }
+          // Pour les routes /qr/seances, permettre le mode dégradé
+          if (error.config?.url?.includes('/qr/seances')) {
+            error.isSeancesUnavailable = true
+            error.message = 'Service des séances indisponible'
+          }
           break
           
         case 400:
@@ -177,15 +182,32 @@ api.interceptors.response.use(
           break
           
         case 500:
-          // ✅ AJOUT: Gestion spécifique des erreurs 500
-          error.message = 'Erreur serveur interne. Le backend a un problème.'
+          // ✅ AMÉLIORATION: Détails spécifiques pour /qr/seances
+          if (error.config?.url?.includes('/qr/seances')) {
+            error.message = 'Erreur serveur sur le service des séances. Mode dégradé activé.'
+            error.isSeancesServerError = true
+          } else {
+            error.message = 'Erreur serveur interne. Le backend a un problème.'
+          }
           error.isServerError = true
           break
+          
+        case 502:
+        case 503:
+        case 504:
+          error.message = 'Service temporairement indisponible. Veuillez réessayer dans quelques instants.'
+          error.isServiceUnavailable = true
+          break
       }
-    } else if (!error.response && error.code === 'ERR_NETWORK') {
-      // ✅ MODIFICATION: Message d'erreur amélioré
-      error.message = 'Serveur inaccessible. Vérifiez: 1) Votre connexion Internet 2) Que le backend est démarré.'
-      error.isNetworkError = true
+    } else if (!error.response) {
+      if (error.code === 'ERR_NETWORK') {
+        // ✅ MODIFICATION: Message d'erreur amélioré
+        error.message = 'Serveur inaccessible. Vérifiez: 1) Votre connexion Internet 2) Que le backend est démarré.'
+        error.isNetworkError = true
+      } else if (error.code === 'ECONNABORTED') {
+        error.message = 'La requête a expiré. Le serveur met trop de temps à répondre.'
+        error.isTimeout = true
+      }
     }
     
     return Promise.reject(error)
@@ -271,11 +293,17 @@ export const apiHelper = {
   async getTeacherSeances() {
     try {
       console.log('📅 Récupération séances enseignant...')
-      const response = await api.get('/qr/seances')
+      const response = await api.get('/qr/seances', { timeout: 10000 })
       console.log('✅ Séances récupérées:', response.data?.seances?.length || 0)
       return response.data
     } catch (error) {
       console.error('❌ Erreur récupération séances:', error.message)
+      
+      // Spécifique pour permettre le mode dégradé
+      if (error.isSeancesServerError || error.isSeancesUnavailable) {
+        error.allowDegradedMode = true
+      }
+      
       throw error
     }
   },
@@ -283,7 +311,7 @@ export const apiHelper = {
   async getTeacherMatieres() {
     try {
       console.log('📚 Récupération matières enseignant...')
-      const response = await api.get('/matiere')
+      const response = await api.get('/matiere', { timeout: 10000 })
       console.log('✅ Matières récupérées:', response.data?.matieres?.length || 0)
       return response.data
     } catch (error) {
@@ -310,6 +338,23 @@ export const apiHelper = {
       return { 
         connected: false, 
         error: error.message
+      }
+    }
+  },
+  
+  // ✅ NOUVEAU: Vérifier spécifiquement le service des séances
+  async checkSeancesService() {
+    try {
+      const response = await api.get('/qr/seances', { timeout: 5000 })
+      return { 
+        status: 'available', 
+        count: response.data?.seances?.length || 0 
+      }
+    } catch (error) {
+      return { 
+        status: 'unavailable', 
+        error: error.message,
+        isServerError: error.response?.status === 500
       }
     }
   },

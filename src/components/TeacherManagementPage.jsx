@@ -21,9 +21,11 @@ function TeacherManagementPage({ user }) {
   })
   const [generatedQR, setGeneratedQR] = useState(null)
   const [generating, setGenerating] = useState(false)
+  const [apiMode, setApiMode] = useState('online') // 'online', 'degraded', 'offline'
   
   // Références pour éviter les appels dupliqués
   const hasFetched = useRef(false)
+  const errorCountRef = useRef(0)
 
   useEffect(() => {
     if (hasFetched.current) return
@@ -52,25 +54,79 @@ function TeacherManagementPage({ user }) {
         
         console.log('👨‍🏫 Utilisateur ID:', user.id)
         
-        // Récupérer les données directement depuis l'API
-        // L'API /matiere retourne maintenant les matières filtrées par enseignant
-        const [matieresRes, seancesRes] = await Promise.all([
-          api.get('/matiere'),
-          api.get('/qr/seances')
-        ])
+        // Mode dégradé: ne charger que les matières si séances échoue
+        if (apiMode === 'degraded') {
+          console.log('⚡ Mode dégradé activé')
+          try {
+            const matieresRes = await api.get('/matiere', { timeout: 10000 })
+            let matieresData = extractMatieresFromResponse(matieresRes?.data)
+            setMatieres(matieresData)
+            setSeances([])
+            setError('Mode dégradé: les séances ne sont pas disponibles')
+          } catch (degradedError) {
+            setError('Mode dégradé échoué. Veuillez rafraîchir la page.')
+          } finally {
+            setLoading(false)
+          }
+          return
+        }
         
-        // Extraire les matières de la réponse structurée
-        let matieresData = extractMatieresFromResponse(matieresRes?.data)
-        let seancesData = extractSeancesFromResponse(seancesRes?.data)
-        
-        console.log('✅ Données matières réelles (filtrées par enseignant):', matieresData)
-        console.log('✅ Données séances réelles:', seancesData)
-        
-        setMatieres(matieresData)
-        setSeances(seancesData)
-        
-        if (matieresData.length === 0) {
-          console.log('ℹ️ Aucune matière trouvée pour cet enseignant')
+        // Mode normal: charger toutes les données
+        try {
+          const [matieresRes, seancesRes] = await Promise.all([
+            api.get('/matiere', { timeout: 10000 }),
+            api.get('/qr/seances', { timeout: 10000 })
+          ])
+          
+          // Réinitialiser le compteur d'erreurs en cas de succès
+          errorCountRef.current = 0
+          
+          // Extraire les matières de la réponse structurée
+          let matieresData = extractMatieresFromResponse(matieresRes?.data)
+          let seancesData = extractSeancesFromResponse(seancesRes?.data)
+          
+          console.log('✅ Données matières réelles (filtrées par enseignant):', matieresData)
+          console.log('✅ Données séances réelles:', seancesData)
+          
+          setMatieres(matieresData)
+          setSeances(seancesData)
+          
+          if (matieresData.length === 0) {
+            console.log('ℹ️ Aucune matière trouvée pour cet enseignant')
+          }
+          
+        } catch (fetchError) {
+          // Gestion spécifique de l'erreur sur /qr/seances
+          if (fetchError.config?.url?.includes('/qr/seances')) {
+            console.error('❌ Erreur spécifique /qr/seances:', fetchError)
+            
+            errorCountRef.current++
+            
+            // Basculer en mode dégradé après 2 erreurs
+            if (errorCountRef.current >= 2) {
+              setApiMode('degraded')
+              console.log('🔄 Basculer en mode dégradé')
+              
+              // Relancer en mode dégradé
+              setTimeout(() => {
+                fetchData()
+              }, 500)
+              return
+            }
+            
+            // Essayer de récupérer seulement les matières
+            try {
+              const matieresRes = await api.get('/matiere', { timeout: 10000 })
+              let matieresData = extractMatieresFromResponse(matiereRes?.data)
+              setMatieres(matieresData)
+              setSeances([])
+              setError('Les séances ne sont pas disponibles pour le moment. Vous pouvez quand même générer des QR codes.')
+            } catch (matieresError) {
+              setError('Impossible de charger les données. Veuillez réessayer plus tard.')
+            }
+          } else {
+            throw fetchError
+          }
         }
         
       } catch (error) {
@@ -85,8 +141,16 @@ function TeacherManagementPage({ user }) {
           }
         } else if (error.response?.status === 404) {
           setError('Les endpoints API ne sont pas disponibles. Vérifiez la configuration du serveur.')
+        } else if (error.response?.status === 500) {
+          if (error.config?.url?.includes('/qr/seances')) {
+            setError('Le service des séances est temporairement indisponible. Vous pouvez toujours générer des QR codes.')
+          } else {
+            setError('Erreur serveur. Veuillez réessayer dans quelques instants.')
+          }
         } else if (error.isNetworkError) {
           setError('Impossible de se connecter au serveur. Vérifiez que le serveur backend est démarré.')
+        } else if (error.code === 'ECONNABORTED') {
+          setError('La requête a expiré. Le serveur met trop de temps à répondre.')
         } else {
           setError(getApiErrorMessage(error, 'Erreur lors de la récupération des données'))
         }
@@ -104,7 +168,7 @@ function TeacherManagementPage({ user }) {
     return () => {
       console.log('🧹 Cleanup TeacherManagementPage')
     }
-  }, [user])
+  }, [user, apiMode])
 
   // Fonction pour extraire les matières de la réponse
   const extractMatieresFromResponse = (data) => {
@@ -189,16 +253,19 @@ function TeacherManagementPage({ user }) {
       // Validation
       if (!user || user.type_utilisateur !== 'enseignant') {
         setError('Seuls les enseignants peuvent générer des QR codes')
+        setGenerating(false)
         return
       }
 
       if (!qrFormData.id_matiere || !qrFormData.heure_debut || !qrFormData.heure_fin || !qrFormData.salle) {
         setError('Veuillez remplir tous les champs obligatoires')
+        setGenerating(false)
         return
       }
 
       if (qrFormData.heure_debut >= qrFormData.heure_fin) {
         setError('L\'heure de fin doit être après l\'heure de début')
+        setGenerating(false)
         return
       }
 
@@ -209,6 +276,7 @@ function TeacherManagementPage({ user }) {
       
       if (!matiereSelectionnee) {
         setError('La matière sélectionnée n\'est pas valide ou ne vous appartient pas')
+        setGenerating(false)
         return
       }
 
@@ -220,7 +288,7 @@ function TeacherManagementPage({ user }) {
       console.log('📦 Données envoyées à l\'API:', formDataWithTeacher)
       
       // Appel API pour générer le QR code
-      const response = await api.post('/qr/generate', formDataWithTeacher)
+      const response = await api.post('/qr/generate', formDataWithTeacher, { timeout: 15000 })
       
       console.log('✅ QR code généré avec succès:', response.data)
       
@@ -261,6 +329,7 @@ function TeacherManagementPage({ user }) {
       if (!qrDataForGeneration || typeof qrDataForGeneration !== 'string') {
         console.error('❌ Données QR invalides:', qrDataForGeneration)
         setError('Erreur: données QR invalides pour la génération')
+        setGenerating(false)
         return
       }
       
@@ -281,6 +350,7 @@ function TeacherManagementPage({ user }) {
       } catch (qrError) {
         console.error('❌ Erreur génération QR image:', qrError)
         setError('Erreur lors de la génération de l\'image QR code')
+        setGenerating(false)
         return
       }
       
@@ -310,8 +380,10 @@ function TeacherManagementPage({ user }) {
         salle: ''
       })
       
-      // Rafraîchir la liste des séances
-      await refreshSeances()
+      // Rafraîchir la liste des séances si en mode normal
+      if (apiMode === 'online') {
+        await refreshSeances()
+      }
       
     } catch (error) {
       console.error('❌ Erreur génération QR code:', error)
@@ -330,8 +402,12 @@ function TeacherManagementPage({ user }) {
         setError('Session expirée. Veuillez vous reconnecter.')
       } else if (error.response?.status === 400) {
         setError(error.response.data?.message || 'Données invalides')
+      } else if (error.response?.status === 500) {
+        setError('Le serveur a rencontré une erreur lors de la génération du QR code. Veuillez réessayer.')
       } else if (error.isNetworkError) {
         setError('Impossible de se connecter au serveur pour générer le QR code.')
+      } else if (error.code === 'ECONNABORTED') {
+        setError('La génération a pris trop de temps. Veuillez réessayer.')
       } else {
         setError(getApiErrorMessage(error, 'Erreur lors de la génération du QR code'))
       }
@@ -350,6 +426,7 @@ function TeacherManagementPage({ user }) {
       // Vérifier si la séance est encore active
       if (seance.qr_expire && new Date(seance.qr_expire) <= new Date()) {
         setError('Ce QR code a expiré et ne peut plus être affiché')
+        setGenerating(false)
         return
       }
 
@@ -383,6 +460,7 @@ function TeacherManagementPage({ user }) {
       if (!qrDataForGeneration || typeof qrDataForGeneration !== 'string') {
         console.error('❌ Données QR invalides pour affichage:', qrDataForGeneration)
         setError('Erreur: données QR invalides pour la génération')
+        setGenerating(false)
         return
       }
       
@@ -400,6 +478,7 @@ function TeacherManagementPage({ user }) {
       } catch (qrError) {
         console.error('❌ Erreur génération QR côté client:', qrError)
         setError('Erreur lors de la génération du QR code. Veuillez réessayer.')
+        setGenerating(false)
         return
       }
       
@@ -527,10 +606,16 @@ function TeacherManagementPage({ user }) {
   const refreshSeances = async () => {
     try {
       console.log('🔄 Rafraîchissement des séances...')
-      const seancesRes = await api.get('/qr/seances')
+      const seancesRes = await api.get('/qr/seances', { timeout: 10000 })
       let seancesData = extractSeancesFromResponse(seancesRes.data)
       setSeances(seancesData)
       console.log('✅ Liste des séances rafraîchie')
+      
+      // Si réussi, revenir en mode normal
+      if (apiMode !== 'online') {
+        setApiMode('online')
+        errorCountRef.current = 0
+      }
     } catch (refreshError) {
       console.error('❌ Erreur rafraîchissement séances:', refreshError)
       setError('Impossible de rafraîchir la liste des séances')
@@ -540,7 +625,7 @@ function TeacherManagementPage({ user }) {
   const refreshMatieres = async () => {
     try {
       console.log('🔄 Rafraîchissement des matières...')
-      const matieresRes = await api.get('/matiere')
+      const matieresRes = await api.get('/matiere', { timeout: 10000 })
       let matieresData = extractMatieresFromResponse(matieresRes.data)
       setMatieres(matieresData)
       console.log('✅ Liste des matières rafraîchie')
@@ -604,6 +689,19 @@ function TeacherManagementPage({ user }) {
     return seance.qr_expire && new Date(seance.qr_expire) > new Date()
   }
 
+  const handleRetryConnection = () => {
+    setApiMode('online')
+    errorCountRef.current = 0
+    setError('')
+    hasFetched.current = false
+    setLoading(true)
+    
+    // Déclencher un nouveau chargement
+    setTimeout(() => {
+      hasFetched.current = false
+    }, 100)
+  }
+
   return (
     <Container className="my-5">
       <div className="text-center mb-5">
@@ -612,6 +710,24 @@ function TeacherManagementPage({ user }) {
         </div>
         <h1 className="display-5 fw-bold text-success mb-3">Gestion des Cours</h1>
         <p className="lead text-muted">Gérez vos séances de cours et générez des QR codes pour vos étudiants</p>
+        
+        {/* Indicateur de mode */}
+        {apiMode !== 'online' && (
+          <div className="alert alert-warning d-inline-flex align-items-center">
+            <i className="bi bi-exclamation-triangle me-2"></i>
+            <span>
+              Mode {apiMode === 'degraded' ? 'dégradé' : 'hors ligne'} - 
+              {apiMode === 'degraded' ? ' Fonctionnalités limitées' : ' Connexion perdue'}
+            </span>
+            <button 
+              className="btn btn-sm btn-outline-warning ms-3"
+              onClick={handleRetryConnection}
+            >
+              <i className="bi bi-arrow-clockwise me-1"></i>
+              Réessayer
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -903,6 +1019,9 @@ function TeacherManagementPage({ user }) {
               <h5 className="mb-0">
                 <i className="bi bi-list-ul me-2"></i>
                 Mes Séances ({Array.isArray(seances) ? seances.length : 0})
+                {apiMode === 'degraded' && (
+                  <span className="badge bg-warning ms-2">Mode dégradé</span>
+                )}
               </h5>
             </div>
             <div className="card-body">
@@ -912,6 +1031,21 @@ function TeacherManagementPage({ user }) {
                     <span className="visually-hidden">Chargement...</span>
                   </div>
                   <p className="text-muted mt-2">Chargement des données depuis la base de données...</p>
+                </div>
+              ) : apiMode === 'degraded' ? (
+                <div className="text-center py-4">
+                  <i className="bi bi-wifi-off text-warning" style={{ fontSize: '3rem' }}></i>
+                  <p className="text-warning mt-2">Le service des séances est temporairement indisponible</p>
+                  <p className="text-muted small">
+                    Vous pouvez toujours générer de nouveaux QR codes
+                  </p>
+                  <button 
+                    className="btn btn-outline-warning btn-sm mt-2"
+                    onClick={handleRetryConnection}
+                  >
+                    <i className="bi bi-arrow-clockwise me-1"></i>
+                    Réessayer la connexion
+                  </button>
                 </div>
               ) : !Array.isArray(seances) || seances.length === 0 ? (
                 <div className="text-center py-4">
@@ -977,31 +1111,20 @@ function TeacherManagementPage({ user }) {
         </div>
       </div>
 
-      <div className="row g-4 mb-4">
-        <div className="col-12">
-          <div className="card shadow-lg border-0">
-            <div className="card-header bg-info text-white">
-              <h5 className="mb-0">
-                <i className="bi bi-book me-2"></i>
-                Gestion des Matières
-              </h5>
-            </div>
-            <div className="card-body text-center">
-              <p className="text-muted mb-3">Gérez vos matières : ajoutez, modifiez ou supprimez des matières</p>
-              <a href="#/matieres" className="btn btn-info">
-                <i className="bi bi-book me-2"></i>
-                Gérer les matières
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="text-center mt-4">
-        <a href="#/dashboard" className="btn btn-outline-success">
+        <a href="#/dashboard" className="btn btn-outline-success me-2">
           <i className="bi bi-arrow-left me-2"></i>
           Retour au tableau de bord
         </a>
+        {(apiMode !== 'online' || errorCountRef.current > 0) && (
+          <button 
+            className="btn btn-outline-warning"
+            onClick={handleRetryConnection}
+          >
+            <i className="bi bi-arrow-clockwise me-2"></i>
+            Rafraîchir les données
+          </button>
+        )}
       </div>
     </Container>
   )
