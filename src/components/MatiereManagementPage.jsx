@@ -190,7 +190,7 @@ function MatiereManagementPage({ user }) {
           matieresData = data.data
         }
       } else if (data && data.message) {
-        console.warn('Message d'erreur de l\'API:', data.message)
+        console.warn("Message d'erreur de l\'API:", data.message)
       }
 
       setMatieres(matieresData)
