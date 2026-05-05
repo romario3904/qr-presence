@@ -1,3 +1,6 @@
+/* index.css - Design System ENI */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
+
 * {
   margin: 0;
   padding: 0;
@@ -14,13 +17,14 @@ html, body, #root {
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
 }
 
-/* S'assurer que les icônes Bootstrap Icons chargent correctement */
+/* Styles Bootstrap Icons */
 .bi::before {
   display: inline-block;
   font-family: "bootstrap-icons" !important;
@@ -32,4 +36,220 @@ body {
   vertical-align: -.125em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ENI Design System Variables */
+:root {
+  --eni-primary: #2d3748;
+  --eni-primary-dark: #1a202c;
+  --eni-accent: #0047ab;
+  --eni-accent-light: #4a90e2;
+  --eni-success: #10b981;
+  --eni-warning: #f59e0b;
+  --eni-danger: #ef4444;
+  --eni-gray-50: #f9fafb;
+  --eni-gray-100: #f3f4f6;
+  --eni-gray-200: #e5e7eb;
+  --eni-gray-300: #d1d5db;
+  --eni-gray-400: #9ca3af;
+  --eni-gray-500: #6b7280;
+  --eni-gray-600: #4b5563;
+  --eni-gray-700: #374151;
+  --eni-gray-800: #1f2937;
+  --eni-gray-900: #111827;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Cards ENI */
+.eni-card {
+  background: white;
+  border-radius: 1rem;
+  border: none;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.eni-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.eni-card-header {
+  background: white;
+  border-bottom: 2px solid var(--eni-gray-100);
+  padding: 1.25rem 1.5rem;
+  font-weight: 600;
+}
+
+/* Progress Bar ENI */
+.eni-progress {
+  background: var(--eni-gray-200);
+  border-radius: 1rem;
+  height: 0.5rem;
+}
+
+.eni-progress-bar {
+  background: linear-gradient(90deg, var(--eni-accent) 0%, var(--eni-accent-light) 100%);
+  border-radius: 1rem;
+  transition: width 0.5s ease;
+}
+
+/* stat cards ENI */
+.stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  border: 1px solid var(--eni-gray-100);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--eni-gray-800);
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--eni-gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Table ENI */
+.eni-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.eni-table th {
+  background: var(--eni-gray-50);
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--eni-gray-500);
+  border-bottom: 1px solid var(--eni-gray-200);
+}
+
+.eni-table td {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--eni-gray-100);
+  color: var(--eni-gray-700);
+}
+
+.eni-table tr:hover td {
+  background: var(--eni-gray-50);
+}
+
+/* Badges ENI */
+.badge-eni {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-present {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-late {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+.badge-absent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Button ENI */
+.btn-eni-primary {
+  background: linear-gradient(135deg, var(--eni-accent) 0%, var(--eni-accent-light) 100%);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  font-weight: 500;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.btn-eni-primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(110%);
+  color: white;
+}
+
+.btn-eni-outline {
+  background: transparent;
+  border: 1px solid var(--eni-gray-300);
+  border-radius: 0.5rem;
+  padding: 0.625rem 1.5rem;
+  font-weight: 500;
+  color: var(--eni-gray-700);
+  transition: all 0.3s ease;
+}
+
+.btn-eni-outline:hover {
+  background: var(--eni-gray-50);
+  border-color: var(--eni-accent);
+  color: var(--eni-accent);
 }
