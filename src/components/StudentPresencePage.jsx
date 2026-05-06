@@ -533,7 +533,7 @@ function StudentPresencePage({ user }) {
         <p className="lead text-muted">Consultez l'historique de vos présences et vos statistiques</p>
         
         {/* Bouton de déconnexion pour debug */}
-        {process.env.NODE_ENV === 'development' && (
+        {import.meta.env.DEV && (
           <button 
             onClick={handleLogout}
             className="btn btn-sm btn-outline-danger"

@@ -1,8 +1,11 @@
 // apis.js
 import axios from 'axios'
 
+const normalizeBase = (url) => (url ? url.replace(/\/+$/, '') : url)
+const API_ORIGIN = normalizeBase(import.meta.env.VITE_API_URL) || 'https://qr-presence-api.onrender.com'
+
 const api = axios.create({
-  baseURL: 'https://qr-presence-api.onrender.com/api',
+  baseURL: `${API_ORIGIN}/api`,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'

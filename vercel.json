@@ -22,6 +22,7 @@
     }
   ],
   "env": {
-    "NODE_VERSION": "18"
+    "NODE_VERSION": "18",
+    "VITE_API_URL": "https://qr-presence-api.onrender.com"
   }
 }
