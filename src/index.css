@@ -562,6 +562,189 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+/* ─── Register page ─── */
+.register-page {
+  min-height: 100vh;
+  background: linear-gradient(160deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-500) 100%);
+  padding: 1.25rem 0 2.5rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.register-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 85%, rgba(255,255,255,0.08) 0%, transparent 45%),
+    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.06) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.register-brand-panel {
+  color: #fff;
+  padding: 2rem 1.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.register-brand-panel h1 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.register-brand-panel p {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1.5rem;
+}
+
+.register-feature {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.register-feature i {
+  color: #6ee7b7;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.register-card {
+  position: relative;
+  z-index: 1;
+  max-height: none;
+}
+
+.register-card .card-body {
+  padding: clamp(1.25rem, 4vw, 2rem) !important;
+}
+
+.register-section-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gray-500);
+  margin: 1.25rem 0 0.85rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.register-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.role-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.35rem;
+  background: var(--gray-100);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.role-toggle-btn {
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  padding: 0.65rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--gray-600);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+}
+
+.role-toggle-btn:hover:not(:disabled) {
+  color: var(--brand-700);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.role-toggle-btn.active {
+  background: #fff;
+  color: var(--brand-700);
+  box-shadow: var(--shadow-sm);
+}
+
+.role-toggle-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.register-check-group {
+  background: var(--gray-50);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 0.35rem 0.75rem;
+}
+
+.register-check-group .form-check {
+  margin-bottom: 0;
+  min-height: auto;
+}
+
+.register-check-group .form-check-label {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.register-footer-link {
+  border-top: 1px solid var(--border);
+  padding-top: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+@media (min-width: 992px) {
+  .register-page {
+    padding: 2rem 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .register-brand-panel {
+    padding: 2.5rem 2rem 2.5rem 0;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .register-brand-panel {
+    text-align: center;
+    padding: 0 0 1.25rem;
+  }
+
+  .register-feature {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .register-check-group {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .role-toggle-btn {
+    font-size: 0.8rem;
+    padding: 0.55rem 0.5rem;
+  }
+}
+
 /* ─── Mobile responsive ─── */
 @media (max-width: 991.98px) {
   .page-container {
