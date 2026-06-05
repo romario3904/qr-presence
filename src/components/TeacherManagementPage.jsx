@@ -289,31 +289,30 @@ function TeacherManagementPage({ user }) {
   }
 
   return (
-    <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
-      <Container className="py-5">
+    <div className="page-shell">
+      <Container className="page-container">
         {/* Header */}
-        <Row className="mb-5 fade-in-up">
+        <Row className="page-header fade-in-up">
           <Col>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div>
-                <h1 className="display-5 fw-bold mb-2" style={{ color: '#1e3c72' }}>
+                <h1 className="page-title">
                   Gestion des Cours
                 </h1>
-                <p className="text-muted lead mb-0">
+                <p className="page-subtitle">
                   Gérez vos séances de cours et générez des QR codes pour vos étudiants
                 </p>
               </div>
-              <div className="d-flex gap-2">
+              <div className="d-flex gap-2 flex-wrap">
                 <Button 
                   variant="primary" 
-                  className="rounded-pill px-4"
-                  style={{ background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)', border: 'none' }}
+                  className="btn-pill px-4"
                 >
                   <i className="bi bi-plus-circle me-2"></i>
                   Nouvelle Session
                 </Button>
                 <Link to="/dashboard">
-                  <Button variant="outline-secondary" className="rounded-pill px-4">
+                  <Button variant="outline-secondary" className="btn-pill px-4">
                     <i className="bi bi-arrow-left me-2"></i>
                     Dashboard
                   </Button>
@@ -339,27 +338,24 @@ function TeacherManagementPage({ user }) {
         )}
 
         {/* Quick Action Card */}
-        <Row className="mb-5 fade-in-up" style={{ animationDelay: '0.05s' }}>
+        <Row className="mb-5 fade-in-up">
           <Col>
-            <Card className="border-0 shadow-lg overflow-hidden" style={{ borderRadius: '1.5rem' }}>
-              <div style={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                padding: '2rem'
-              }}>
+            <Card className="border-0 shadow-lg hero-banner overflow-hidden">
+              <Card.Body>
                 <Row className="align-items-center">
                   <Col lg={8}>
-                    <h3 className="text-white mb-2">
+                    <h3 className="mb-2">
                       <i className="bi bi-qr-code-scan me-2"></i>
                       Génération rapide de QR Code
                     </h3>
-                    <p className="text-white-50 mb-0">
+                    <p className="mb-0">
                       Créez instantanément un QR code pour votre prochaine session de cours
                     </p>
                   </Col>
                   <Col lg={4} className="text-lg-end mt-3 mt-lg-0">
                     <Button 
                       variant="light" 
-                      className="rounded-pill px-4 py-2 fw-semibold"
+                      className="btn-pill px-4 py-2 fw-semibold"
                       onClick={() => document.getElementById('qr-form-section')?.scrollIntoView({ behavior: 'smooth' })}
                     >
                       <i className="bi bi-qr-code me-2"></i>
@@ -367,7 +363,7 @@ function TeacherManagementPage({ user }) {
                     </Button>
                   </Col>
                 </Row>
-              </div>
+              </Card.Body>
             </Card>
           </Col>
         </Row>
@@ -375,7 +371,7 @@ function TeacherManagementPage({ user }) {
         <Row className="g-4">
           {/* Formulaire de génération QR Code */}
           <Col lg={5}>
-            <Card className="border-0 shadow-lg h-100 fade-in-up" id="qr-form-section" style={{ animationDelay: '0.1s', borderRadius: '1rem' }}>
+            <Card className="border-0 shadow-lg app-card h-100 fade-in-up" id="qr-form-section">
               <Card.Header className="bg-white border-0 pt-4 pb-0">
                 <h5 className="fw-bold mb-0">
                   <i className="bi bi-qr-code me-2 text-primary"></i>
@@ -500,7 +496,7 @@ function TeacherManagementPage({ user }) {
 
           {/* Liste des sessions existantes */}
           <Col lg={7}>
-            <Card className="border-0 shadow-lg fade-in-up" style={{ animationDelay: '0.2s', borderRadius: '1rem' }}>
+            <Card className="border-0 shadow-lg app-card fade-in-up">
               <Card.Header className="bg-white border-0 pt-4 pb-0">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <div>

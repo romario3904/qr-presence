@@ -523,14 +523,14 @@ function MatiereManagementPage({ user }) {
   }
 
   return (
-    <Container className="my-4">
+    <Container className="page-container my-4 my-md-5">
       {/* Header */}
-      <div className="text-center mb-4">
-        <h1 className="mb-3">
-          <i className="bi bi-book-half me-2"></i>
-          Gestion des Matières
-        </h1>
-        <p className="text-muted">
+      <div className="text-center page-header">
+        <div className="page-icon mx-auto">
+          <i className="bi bi-book-half"></i>
+        </div>
+        <h1 className="page-title">Gestion des Matières</h1>
+        <p className="page-subtitle">
           Gérez vos matières : ajoutez, modifiez ou supprimez des matières
         </p>
       </div>
@@ -655,8 +655,8 @@ function MatiereManagementPage({ user }) {
       </Row>
 
       {/* Liste des matières */}
-      <Card className="mb-4">
-        <Card.Header className="bg-primary text-white">
+      <Card className="mb-4 app-card shadow-sm">
+        <Card.Header className="bg-primary bg-gradient text-white border-0">
           <div className="d-flex justify-content-between align-items-center">
             <h5 className="mb-0">
               <i className="bi bi-list-ul me-2"></i>

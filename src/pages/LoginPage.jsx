@@ -41,22 +41,24 @@ export default function LoginPage({ onLoggedIn }) {
   }
 
   return (
-    <div className="login-fullscreen bg-light" style={{ minHeight: '100vh' }}>
-      <Container className="py-5">
+    <div className="login-page">
+      <Container>
         <Row className="justify-content-center">
-          <Col md={7} lg={5}>
-            <Card className="shadow border-0">
+          <Col xs={12} sm={10} md={7} lg={5} xl={4}>
+            <Card className="login-card-pro border-0">
               <Card.Body className="p-4 p-md-5">
                 <div className="text-center mb-4">
-                  <div className="mb-3">
-                    <i className="bi bi-qr-code-scan text-primary" style={{ fontSize: '3rem' }} />
+                  <div className="login-logo-pro">
+                    <i className="bi bi-qr-code-scan" />
                   </div>
-                  <h2 className="mb-1">Se connecter</h2>
-                  <div className="text-muted">Entrez votre matricule et votre mot de passe</div>
+                  <h2 className="fw-bold mb-1 text-primary">
+                    Connexion
+                  </h2>
+                  <p className="text-muted mb-0">Système de contrôle de présence</p>
                 </div>
 
                 {error && (
-                  <Alert variant="danger" className="rounded-3" dismissible onClose={() => setError('')}>
+                  <Alert variant="danger" dismissible onClose={() => setError('')}>
                     <i className="bi bi-exclamation-triangle-fill me-2" />
                     {error}
                   </Alert>
@@ -90,19 +92,19 @@ export default function LoginPage({ onLoggedIn }) {
                     />
                   </Form.Group>
 
-                  <Button type="submit" className="w-100" size="lg" disabled={loading}>
+                  <Button type="submit" variant="primary" className="w-100 btn-lg" disabled={loading}>
                     {loading ? (
                       <>
                         <Spinner animation="border" size="sm" className="me-2" />
                         Connexion...
                       </>
                     ) : (
-                      'Connexion'
+                      'Se connecter'
                     )}
                   </Button>
 
                   <div className="text-center mt-3">
-                    <a href="#/register" className="text-decoration-none">
+                    <a href="#/register" className="text-decoration-none fw-semibold">
                       Créer un compte
                     </a>
                   </div>
@@ -110,13 +112,12 @@ export default function LoginPage({ onLoggedIn }) {
               </Card.Body>
             </Card>
 
-            <div className="text-center text-muted small mt-3">
-              API: {import.meta.env.VITE_API_URL || 'https://qr-presence-api.onrender.com'}
-            </div>
+            <p className="text-center text-white-50 small mt-3 mb-0 opacity-75">
+              QR Présence — Gestion d&apos;assiduité
+            </p>
           </Col>
         </Row>
       </Container>
     </div>
   )
 }
-

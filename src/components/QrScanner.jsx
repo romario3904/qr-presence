@@ -231,20 +231,15 @@ function QrScanner({ user }) {
   const showScanner = !loading && !scanResult
 
   return (
-    <Container className="my-5">
-      <Row className="mb-5">
+    <Container className="page-container my-4 my-md-5">
+      <Row className="page-header">
         <Col>
           <div className="text-center">
-            <div className="mb-3">
-              <div
-                className="bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center text-white shadow"
-                style={{ width: '80px', height: '80px' }}
-              >
-                <i className="bi bi-qr-code-scan" style={{ fontSize: '3rem' }}></i>
-              </div>
+            <div className="page-icon mx-auto">
+              <i className="bi bi-qr-code-scan"></i>
             </div>
-            <h1 className="display-5 fw-bold text-primary mb-3">Scanner QR Code</h1>
-            <p className="lead text-muted">
+            <h1 className="page-title">Scanner QR Code</h1>
+            <p className="page-subtitle">
               Scannez le QR code affiché par votre professeur pour pointer votre présence
             </p>
           </div>
@@ -252,9 +247,9 @@ function QrScanner({ user }) {
       </Row>
 
       <Row className="justify-content-center">
-        <Col md={10} lg={8}>
-          <Card className="shadow-lg border-0">
-            <Card.Header className="bg-primary text-white text-center py-3">
+        <Col xs={12} md={10} lg={8}>
+          <Card className="shadow-lg border-0 app-card">
+            <Card.Header className="bg-primary bg-gradient text-white text-center py-3 border-0">
               <h5 className="mb-0">
                 <i className="bi bi-camera-video me-2"></i>
                 Scanner de QR Code
@@ -274,16 +269,17 @@ function QrScanner({ user }) {
                 <div className="py-4">
                   <div className="mb-4">
                     <div
-                      className={`${
-                        scanResult.alreadyPresent ? 'bg-info' : 'bg-success'
-                      } bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center text-white shadow`}
-                      style={{ width: '100px', height: '100px' }}
+                      className={`page-icon mx-auto ${
+                        scanResult.alreadyPresent
+                          ? 'bg-info bg-gradient text-white'
+                          : 'bg-success bg-gradient text-white'
+                      }`}
+                      style={{ width: '88px', height: '88px', fontSize: '2.5rem' }}
                     >
                       <i
                         className={`bi ${
                           scanResult.alreadyPresent ? 'bi-info-circle-fill' : 'bi-check-circle-fill'
                         }`}
-                        style={{ fontSize: '3.5rem' }}
                       ></i>
                     </div>
                   </div>

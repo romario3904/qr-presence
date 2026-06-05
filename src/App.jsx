@@ -88,13 +88,13 @@ function Shell() {
   return (
     <>
       {showNavbar && (
-        <Navbar bg="dark" variant="dark" expand="lg">
+        <Navbar expand="lg" className="app-navbar">
           <Container>
             <Navbar.Brand href="#/dashboard">QR Présence</Navbar.Brand>
-            <Navbar.Toggle aria-controls="main-nav" />
+            <Navbar.Toggle aria-controls="main-nav" aria-label="Menu" />
             <Navbar.Collapse id="main-nav">
               <Nav className="me-auto">
-                <Nav.Link href="#/dashboard">Dashboard</Nav.Link>
+                <Nav.Link href="#/dashboard">Tableau de bord</Nav.Link>
                 {isStudent && (
                   <>
                     <Nav.Link href="#/student">Mes présences</Nav.Link>

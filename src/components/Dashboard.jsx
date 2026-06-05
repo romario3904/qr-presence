@@ -36,31 +36,31 @@ function Dashboard({ user }) {
   const isStudent = user.type_utilisateur === 'etudiant'
 
   return (
-    <div style={{ background: '#f5f7fa', minHeight: '100vh' }}>
-      <Container className="py-5">
+    <div className="page-shell">
+      <Container className="page-container">
         {/* Header */}
-        <Row className="mb-5">
+        <Row className="page-header fade-in-up">
           <Col>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
               <div>
-                <h1 className="display-5 fw-bold mb-2" style={{ color: '#1e3c72' }}>
-                  ENI Presence
+                <h1 className="page-title">
+                  QR Présence
                 </h1>
-                <p className="text-muted lead">
-                  Welcome back, <strong>{getUserName()}</strong>
-                  <Badge bg="primary" className="ms-2">{getUserRole()}</Badge>
+                <p className="page-subtitle">
+                  Bon retour, <strong>{getUserName()}</strong>
+                  <Badge bg="primary" className="ms-2 align-middle">{getUserRole()}</Badge>
                 </p>
-                <p className="text-muted">Voici un aperçu des métriques d'assiduité d'aujourd'hui.</p>
+                <p className="text-muted small mb-0">Aperçu de vos métriques d&apos;assiduité.</p>
               </div>
             </div>
           </Col>
         </Row>
 
         {/* Quick Actions */}
-        <Row className="mb-5">
+        <Row className="mb-5 fade-in-up">
           <Col>
-            <Card className="border-0 shadow-lg" style={{ borderRadius: '1.5rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-              <Card.Body className="p-4">
+            <Card className="border-0 shadow-lg hero-banner">
+              <Card.Body className="p-0">
                 <Row className="align-items-center">
                   <Col lg={8}>
                     <h4 className="text-white mb-2">Marquer votre présence</h4>
@@ -70,12 +70,12 @@ function Dashboard({ user }) {
                   </Col>
                   <Col lg={4} className="text-end">
                     <div className="d-flex gap-3 justify-content-lg-end mt-3 mt-lg-0">
-                      <Button variant="light" className="rounded-pill px-4 py-2">
+                      <Button variant="light" className="btn-pill px-4 py-2">
                         <i className="bi bi-qr-code me-2"></i>
                         Générer QR
                       </Button>
                       <Link to="/scan">
-                        <Button variant="outline-light" className="rounded-pill px-4 py-2">
+                        <Button variant="outline-light" className="btn-pill px-4 py-2">
                           <i className="bi bi-camera me-2"></i>
                           Scanner QR
                         </Button>
@@ -160,7 +160,7 @@ function Dashboard({ user }) {
 
             <Row className="g-4">
               <Col lg={7}>
-                <Card className="border-0 shadow-lg h-100">
+                <Card className="border-0 shadow-lg app-card h-100">
                   <Card.Header className="bg-white border-0 pt-4 pb-0">
                     <h5 className="fw-bold mb-0">
                       <i className="bi bi-activity me-2 text-primary"></i>
@@ -450,79 +450,6 @@ function Dashboard({ user }) {
           </>
         )}
       </Container>
-
-      <style>
-        {`
-          .stat-card {
-            background: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-          }
-          .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-          }
-          .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #1e3c72;
-          }
-          .stat-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280;
-          }
-          .badge-eni {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-          }
-          .badge-present {
-            background: #d1fae5;
-            color: #065f46;
-          }
-          .badge-late {
-            background: #fed7aa;
-            color: #92400e;
-          }
-          .badge-absent {
-            background: #fee2e2;
-            color: #991b1b;
-          }
-          .eni-progress {
-            background: #e5e7eb;
-            border-radius: 1rem;
-            height: 0.75rem;
-          }
-          .eni-progress-bar {
-            background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
-            border-radius: 1rem;
-          }
-          .table.eniable th {
-            background: #f9fafb;
-            padding: 1rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #6b7280;
-            border-bottom: 1px solid #e5e7eb;
-          }
-          .table.eniable td {
-            padding: 1rem;
-            border-bottom: 1px solid #f3f4f6;
-          }
-          .table.eniable tr:hover td {
-            background: #f9fafb;
-          }
-        `}
-      </style>
     </div>
   )
 }

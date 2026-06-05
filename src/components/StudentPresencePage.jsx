@@ -520,13 +520,13 @@ function StudentPresencePage({ user }) {
   }
 
   return (
-    <Container className="my-5">
-      <div className="text-center mb-5">
-        <div className="mb-3">
-          <i className="bi bi-calendar-check text-primary" style={{ fontSize: '4rem' }}></i>
+    <Container className="page-container my-4 my-md-5">
+      <div className="text-center page-header">
+        <div className="page-icon mx-auto">
+          <i className="bi bi-calendar-check"></i>
         </div>
-        <h1 className="display-5 fw-bold text-primary mb-3">Mes Présences</h1>
-        <p className="lead text-muted">Consultez l'historique de vos présences et vos statistiques</p>
+        <h1 className="page-title">Mes Présences</h1>
+        <p className="page-subtitle">Consultez l&apos;historique de vos présences et vos statistiques</p>
         
         {/* Bouton de déconnexion pour debug */}
         {import.meta.env.DEV && (
@@ -555,9 +555,11 @@ function StudentPresencePage({ user }) {
           )}
         </div>
       ) : error ? (
-        <div className="card shadow-lg border-0">
+        <div className="card shadow-lg border-0 app-card">
           <div className="card-body text-center py-5">
-            <i className="bi bi-exclamation-triangle text-warning" style={{ fontSize: '4rem' }}></i>
+            <div className="page-icon mx-auto bg-warning bg-opacity-10 text-warning">
+              <i className="bi bi-exclamation-triangle"></i>
+            </div>
             <h4 className="mt-3 text-warning">Erreur</h4>
             <p className="text-muted">{error}</p>
             
@@ -617,8 +619,8 @@ function StudentPresencePage({ user }) {
         <>
           {/* Section Statistiques - Afficher seulement si on a des données */}
           {(presences.length > 0 || statistics.totalSeances > 0) && (
-            <div className="card shadow-lg border-0 mb-4">
-              <div className="card-header bg-primary text-white">
+            <div className="card shadow-lg border-0 app-card mb-4">
+              <div className="card-header bg-primary bg-gradient text-white border-0">
                 <h5 className="mb-0">
                   <i className="bi bi-bar-chart me-2"></i>
                   Vos statistiques actuelles
@@ -626,28 +628,28 @@ function StudentPresencePage({ user }) {
               </div>
               <div className="card-body">
                 <div className="row text-center">
-                  <div className="col-md-3 mb-3">
-                    <div className="p-3 bg-light rounded">
+                  <div className="col-6 col-md-3 mb-3">
+                    <div className="stat-box">
                       <h3 className="text-primary">{statistics.tauxPresence}%</h3>
-                      <p className="text-muted mb-0">Taux présence</p>
+                      <p className="text-muted mb-0 small">Taux présence</p>
                     </div>
                   </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="p-3 bg-light rounded">
+                  <div className="col-6 col-md-3 mb-3">
+                    <div className="stat-box">
                       <h3 className="text-success">{statistics.totalPresences}</h3>
-                      <p className="text-muted mb-0">Présences</p>
+                      <p className="text-muted mb-0 small">Présences</p>
                     </div>
                   </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="p-3 bg-light rounded">
+                  <div className="col-6 col-md-3 mb-3">
+                    <div className="stat-box">
                       <h3 className="text-danger">{statistics.totalAbsences}</h3>
-                      <p className="text-muted mb-0">Absences</p>
+                      <p className="text-muted mb-0 small">Absences</p>
                     </div>
                   </div>
-                  <div className="col-md-3 mb-3">
-                    <div className="p-3 bg-light rounded">
+                  <div className="col-6 col-md-3 mb-3">
+                    <div className="stat-box">
                       <h3 className="text-info">{statistics.totalSeances}</h3>
-                      <p className="text-muted mb-0">Séances</p>
+                      <p className="text-muted mb-0 small">Séances</p>
                     </div>
                   </div>
                 </div>
@@ -657,8 +659,8 @@ function StudentPresencePage({ user }) {
 
           {/* Section Historique des présences */}
           {presences.length > 0 ? (
-            <div className="card shadow-lg border-0">
-              <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <div className="card shadow-lg border-0 app-card">
+              <div className="card-header bg-primary bg-gradient text-white border-0 d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <h5 className="mb-0">
                   <i className="bi bi-clock-history me-2"></i>
                   Historique des présences ({presences.length})
@@ -670,8 +672,8 @@ function StudentPresencePage({ user }) {
               </div>
               <div className="card-body p-0">
                 <div className="table-responsive">
-                  <table className="table table-hover mb-0">
-                    <thead className="table-light">
+                  <table className="table table-hover eni-table mb-0">
+                    <thead>
                       <tr>
                         <th>Date</th>
                         <th>Heure</th>
@@ -739,9 +741,11 @@ function StudentPresencePage({ user }) {
               </div>
             </div>
           ) : (
-            <div className="card shadow-lg border-0">
+            <div className="card shadow-lg border-0 app-card">
               <div className="card-body text-center py-5">
-                <i className="bi bi-inbox text-muted" style={{ fontSize: '4rem' }}></i>
+                <div className="page-icon page-icon-muted mx-auto">
+                  <i className="bi bi-inbox"></i>
+                </div>
                 <h4 className="mt-3 text-muted">Aucune présence enregistrée</h4>
                 <p className="text-muted">
                   Vous n'avez pas encore de présences enregistrées. Scannez un QR code lors de votre prochain cours.

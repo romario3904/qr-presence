@@ -1,153 +1,132 @@
-/* App.css */
-.min-vh-100 {
-  min-height: 100vh;
+/* ─── App shell & navbar ─── */
+.app-navbar {
+  background: linear-gradient(90deg, var(--brand-900) 0%, var(--brand-800) 100%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 16px rgb(12 31 61 / 0.25);
+  padding: 0.5rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
 }
 
-.main-content {
-  padding-top: 20px;
-  min-height: calc(100vh - 76px);
+.app-navbar .navbar-brand {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f8f9fa;
-  margin: 0;
-  padding: 0;
+.app-navbar .navbar-brand::before {
+  content: '';
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--brand-400), #fff);
+  border-radius: 7px;
+  flex-shrink: 0;
 }
 
-/* Amélioration des cartes */
-.card {
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  border: none;
-  border-radius: 12px;
+.app-navbar .nav-link {
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.85rem !important;
+  border-radius: var(--radius-md);
+  transition: background 0.2s, color 0.2s;
+  margin: 0 0.1rem;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
+.app-navbar .nav-link:hover,
+.app-navbar .nav-link:focus {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-/* Classe spécifique pour les cartes avec effet hover */
+.app-navbar .navbar-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.app-navbar .navbar-toggler {
+  border-color: rgba(255, 255, 255, 0.25);
+  padding: 0.4rem 0.6rem;
+}
+
+.app-navbar .navbar-toggler-icon {
+  filter: invert(1);
+}
+
+.app-navbar .navbar-toggler:focus {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile nav collapse */
+@media (max-width: 991.98px) {
+  .app-navbar .navbar-collapse {
+    background: var(--brand-900);
+    border-radius: var(--radius-lg);
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .app-navbar .nav-link {
+    padding: 0.75rem 1rem !important;
+    margin: 0.15rem 0;
+  }
+
+  .app-navbar .navbar-text {
+    display: block;
+    padding: 0.5rem 1rem;
+    margin: 0.5rem 0 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+  }
+
+  .app-navbar .ms-auto {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+}
+
+/* ─── Teacher page extras ─── */
+.qr-container {
+  background: var(--gray-50);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.qr-container img {
+  border-radius: var(--radius-lg);
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── Hover cards (subtle on touch) ─── */
 .hover-card {
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.hover-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
-}
-
-/* Amélioration des badges */
-.badge {
-  font-weight: 500;
-  padding: 0.5em 0.75em;
-}
-
-/* Amélioration des boutons */
-.btn {
-  border-radius: 8px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-/* Amélioration des tables */
-.table {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.table thead th {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .main-content {
-    padding-top: 10px;
-  }
-  
-  .display-4 {
-    font-size: 2rem;
-  }
-  
-  .display-5 {
-    font-size: 1.75rem;
-  }
-  
+@media (hover: hover) {
   .hover-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg) !important;
+  }
+
+  .card:hover {
+    box-shadow: var(--shadow-md);
   }
 }
 
-/* Animation de fade */
-.fade-in {
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* ─── Print (teacher QR) ─── */
+@media print {
+  .app-navbar,
+  .no-print {
+    display: none !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Amélioration des modals */
-.modal-content {
-  border-radius: 12px;
-  border: none;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-  border-radius: 12px 12px 0 0;
-}
-
-/* Amélioration des alertes */
-.alert {
-  border-radius: 10px;
-  border: none;
-}
-
-/* Amélioration des formulaires */
-.form-control:focus,
-.form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-}
-
-/* Gradient backgrounds */
-.bg-gradient {
-  background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark, #0056b3) 100%);
-}
-
-.bg-primary.bg-gradient {
-  background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%);
-}
-
-.bg-success.bg-gradient {
-  background: linear-gradient(135deg, #198754 0%, #146c43 100%);
-}
-
-.bg-warning.bg-gradient {
-  background: linear-gradient(135deg, #ffc107 0%, #cc9a06 100%);
-}
-
-.bg-info.bg-gradient {
-  background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%);
-}
-
-.bg-danger.bg-gradient {
-  background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
 }
