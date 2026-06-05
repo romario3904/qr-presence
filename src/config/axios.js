@@ -26,8 +26,9 @@ axiosInstance.interceptors.request.use(
     }
 
     const userData = JSON.parse(localStorage.getItem('user') || '{}')
-    if (userData.role) {
-      config.headers['X-User-Role'] = userData.role
+    const userRole = userData.type_utilisateur || userData.role
+    if (userRole) {
+      config.headers['X-User-Role'] = userRole
     }
 
     console.log(`🔄 API Call: ${config.method?.toUpperCase()} ${config.url}`)

@@ -19,8 +19,7 @@ function MatiereManagementPage({ user }) {
     parcours_enseignee: ''
   })
 
-  // Configuration API
-  const API_BASE_URL = 'https://qr-presence-api.onrender.com/api'
+  const API_BASE_URL = `${(import.meta.env.VITE_API_URL || 'https://qr-presence-api.onrender.com').replace(/\/+$/, '')}/api`
 
   useEffect(() => {
     fetchMatieres()

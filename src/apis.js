@@ -39,15 +39,22 @@ const retryRequest = async (error, retryCount = 0) => {
     throw error
   }
 
+  const status = error.response?.status
+  const noRetryStatuses = [400, 401, 403, 404, 409, 422]
+
+  if (status && noRetryStatuses.includes(status)) {
+    throw error
+  }
+
   // Ne retenter que pour les erreurs réseau/timeout
   const shouldRetry = 
     error.code === 'ECONNABORTED' || // Timeout
     error.code === 'ERR_NETWORK' || // Erreur réseau
-    error.response?.status === 429 || // Trop de requêtes
-    error.response?.status === 500 || // Erreur serveur
-    error.response?.status === 502 || // Bad Gateway
-    error.response?.status === 503 || // Service indisponible
-    error.response?.status === 504   // Gateway Timeout
+    status === 429 || // Trop de requêtes
+    status === 500 || // Erreur serveur
+    status === 502 || // Bad Gateway
+    status === 503 || // Service indisponible
+    status === 504   // Gateway Timeout
 
   if (!shouldRetry) {
     throw error
@@ -326,7 +333,10 @@ export const apiHelper = {
   // ==================== UTILITAIRES ====================
   async checkServerHealth() {
     try {
-      const response = await api.get('/health', { timeout: 5000 })
+      const response = await axios.get(`${API_ORIGIN}/health`, {
+        timeout: 5000,
+        headers: { Accept: 'application/json' }
+      })
       return { status: 'online', data: response.data }
     } catch (error) {
       return { status: 'offline', error: error.message }
@@ -335,7 +345,10 @@ export const apiHelper = {
   
   async checkConnectivity() {
     try {
-      await api.get('/health', { timeout: 3000 })
+      await axios.get(`${API_ORIGIN}/health`, {
+        timeout: 3000,
+        headers: { Accept: 'application/json' }
+      })
       return { connected: true }
     } catch (error) {
       return { 

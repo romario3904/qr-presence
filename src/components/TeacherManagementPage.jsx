@@ -4,7 +4,7 @@ import { Container, Row, Col, Card, Button, Form, Alert, Table, Badge, Modal } f
 import { Link } from 'react-router-dom'
 import QRCode from 'qrcode'
 import jsPDF from 'jspdf'
-import api from '../apis'
+import api, { apiHelper } from '../apis'
 
 function TeacherManagementPage({ user }) {
   const [matieres, setMatieres] = useState([])
@@ -28,60 +28,42 @@ function TeacherManagementPage({ user }) {
   // Référence pour éviter les appels dupliqués
   const hasFetched = useRef(false)
 
-  // Données simulées pour la démo (à remplacer par vos appels API réels)
   useEffect(() => {
     if (hasFetched.current) return
     hasFetched.current = true
 
-    // Simulation de chargement des données
-    setTimeout(() => {
-      setMatieres([
-        { id_matiere: 1, code_matiere: 'INF-381', nom_matiere: 'Algorithmique Avancée', credit: 6 },
-        { id_matiere: 2, code_matiere: 'IA-482', nom_matiere: 'Machine Learning Deep', credit: 8 },
-        { id_matiere: 3, code_matiere: 'DIG-205', nom_matiere: 'Marketing Digital', credit: 4 },
-        { id_matiere: 4, code_matiere: 'INF-182', nom_matiere: 'Bases de Données Relationnelles', credit: 5 }
-      ])
-      
-      setSeances([
-        { 
-          id_seance: 1, 
-          nom_matiere: 'Architecture des Ordinateurs',
-          code_matiere: 'ARC-301',
-          date_seance: new Date().toISOString().split('T')[0],
-          heure_debut: '08:30',
-          heure_fin: '11:30',
-          salle: 'Amphi A',
-          nb_presents: 42,
-          nb_total: 45,
-          statut: 'actif'
-        },
-        { 
-          id_seance: 2, 
-          nom_matiere: 'Algorithmique Avancée',
-          code_matiere: 'INF-381',
-          date_seance: '2025-05-04',
-          heure_debut: '13:30',
-          heure_fin: '16:30',
-          salle: 'Salle 102 - Labs',
-          nb_presents: 38,
-          nb_total: 45,
-          statut: 'expire'
-        },
-        { 
-          id_seance: 3, 
-          nom_matiere: 'Web Sémantique',
-          code_matiere: 'WEB-401',
-          date_seance: '2025-05-03',
-          heure_debut: '08:30',
-          heure_fin: '11:30',
-          salle: 'Salle 305',
-          nb_presents: 45,
-          nb_total: 45,
-          statut: 'expire'
-        }
-      ])
-      setLoading(false)
-    }, 500)
+    const loadTeacherData = async () => {
+      try {
+        setLoading(true)
+        setError('')
+
+        const [matieresRes, seancesRes] = await Promise.all([
+          apiHelper.getTeacherMatieres().catch((err) => {
+            console.warn('Matières indisponibles:', err.message)
+            return { matieres: [] }
+          }),
+          apiHelper.getTeacherSeances().catch((err) => {
+            console.warn('Séances indisponibles:', err.message)
+            return { seances: [] }
+          })
+        ])
+
+        setMatieres(matieresRes?.matieres || [])
+        setSeances(
+          (seancesRes?.seances || []).map((seance) => ({
+            ...seance,
+            nb_presents: seance.nombre_presents || 0,
+            statut: seance.qr_expire && new Date(seance.qr_expire) < new Date() ? 'expire' : 'actif'
+          }))
+        )
+      } catch (err) {
+        setError(err.message || 'Impossible de charger les données enseignant')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadTeacherData()
   }, [])
 
   const handleGenerateQR = async (e) => {
@@ -107,53 +89,61 @@ function TeacherManagementPage({ user }) {
       }
 
       const matiereSelectionnee = matieres.find(m => m.id_matiere == qrFormData.id_matiere)
-      
-      // Générer les données pour le QR code
+
+      const response = await api.post('/qr/generate', {
+        id_matiere: Number(qrFormData.id_matiere),
+        date_seance: qrFormData.date_seance,
+        heure_debut: qrFormData.heure_debut,
+        heure_fin: qrFormData.heure_fin,
+        salle: qrFormData.salle
+      })
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Échec de la génération du QR code')
+      }
+
+      const seance = response.data.seance
+      const qrToken = response.data.qrToken
+
       const qrData = JSON.stringify({
-        id_seance: Date.now(),
+        id_seance: seance.id_seance,
+        token: qrToken,
         matiere_id: qrFormData.id_matiere,
         matiere_nom: matiereSelectionnee?.nom_matiere,
         date: qrFormData.date_seance,
         heure_debut: qrFormData.heure_debut,
         heure_fin: qrFormData.heure_fin,
         salle: qrFormData.salle,
-        timestamp: Date.now(),
-        expire: Date.now() + 15 * 60 * 1000 // 15 minutes
+        expires: response.data.qrExpire
       })
 
-      // Générer l'image QR code
-      const qrImage = await QRCode.toDataURL(qrData, {
+      const qrImage = await QRCode.toDataURL(qrToken || qrData, {
         width: 300,
         margin: 2,
         color: { dark: '#000000', light: '#FFFFFF' }
       })
 
       const newSeance = {
-        id_seance: Date.now(),
-        nom_matiere: matiereSelectionnee?.nom_matiere,
-        code_matiere: matiereSelectionnee?.code_matiere,
-        date_seance: qrFormData.date_seance,
-        heure_debut: qrFormData.heure_debut,
-        heure_fin: qrFormData.heure_fin,
-        salle: qrFormData.salle,
+        ...seance,
+        nom_matiere: seance.nom_matiere || matiereSelectionnee?.nom_matiere,
+        code_matiere: seance.code_matiere || matiereSelectionnee?.code_matiere,
         nb_presents: 0,
         nb_total: 0,
-        statut: 'actif',
-        qr_expire: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+        statut: 'actif'
       }
 
       setSeances([newSeance, ...seances])
-      
+
       setGeneratedQR({
         qrCode: qrImage,
         qrData: qrData,
         seance: {
-          nom_matiere: matiereSelectionnee?.nom_matiere,
+          nom_matiere: newSeance.nom_matiere,
           date_seance: qrFormData.date_seance,
           heure_debut: qrFormData.heure_debut,
           heure_fin: qrFormData.heure_fin,
           salle: qrFormData.salle,
-          qr_expire: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+          qr_expire: response.data.qrExpire
         }
       })
       

@@ -32,10 +32,6 @@ function StudentPresencePage({ user }) {
           console.log('✅ ID depuis user.id_etudiant:', user.id_etudiant)
           return user.id_etudiant
         }
-        if (user.id) {
-          console.log('✅ ID depuis user.id:', user.id)
-          return user.id
-        }
       }
       
       // 2. Depuis localStorage
@@ -74,9 +70,9 @@ function StudentPresencePage({ user }) {
           const payload = JSON.parse(atob(token.split('.')[1]))
           console.log('Token payload:', payload)
           
+          if (payload.profil?.id_etudiant) return payload.profil.id_etudiant
           if (payload.id_etudiant) return payload.id_etudiant
           if (payload.etudiant_id) return payload.etudiant_id
-          if (payload.id) return payload.id
         } catch (e) {
           console.log('⚠️ Impossible de décoder le token:', e.message)
         }

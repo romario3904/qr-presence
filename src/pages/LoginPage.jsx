@@ -100,6 +100,12 @@ export default function LoginPage({ onLoggedIn }) {
                       'Connexion'
                     )}
                   </Button>
+
+                  <div className="text-center mt-3">
+                    <a href="#/register" className="text-decoration-none">
+                      Créer un compte
+                    </a>
+                  </div>
                 </Form>
               </Card.Body>
             </Card>
