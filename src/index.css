@@ -5,14 +5,14 @@
   color-scheme: light;
 
   /* Brand */
-  --brand-900: #0c1f3d;
-  --brand-800: #132d54;
-  --brand-700: #1a3d6e;
-  --brand-600: #1e4d8c;
-  --brand-500: #2563eb;
-  --brand-400: #3b82f6;
-  --brand-300: #60a5fa;
-  --brand-50:  #eff6ff;
+  --brand-900: #064e3b;
+  --brand-800: #065f46;
+  --brand-700: #047857;
+  --brand-600: #059669;
+  --brand-500: #10b981;
+  --brand-400: #34d399;
+  --brand-300: #6ee7b7;
+  --brand-50:  #ecfdf5;
 
   /* Neutrals */
   --gray-50:  #f8fafc;
@@ -33,11 +33,13 @@
   --warning-bg: #fef3c7;
   --danger: #dc2626;
   --danger-bg: #fee2e2;
-  --info: #0284c7;
-  --info-bg: #e0f2fe;
+  --info: #0d9488;
+  --info-bg: #ccfbf1;
 
   /* Surfaces */
-  --bg-page: #f0f4f8;
+  --bg-page: #f5f5f5;
+  --navbar-bg: #059669;
+  --navbar-bg-dark: #047857;
   --bg-card: #ffffff;
   --border: #e2e8f0;
   --border-focus: var(--brand-500);
@@ -58,8 +60,8 @@
   --radius-pill: 9999px;
 
   /* Bootstrap overrides */
-  --bs-primary: #1e4d8c;
-  --bs-primary-rgb: 30, 77, 140;
+  --bs-primary: #059669;
+  --bs-primary-rgb: 5, 150, 105;
   --bs-secondary: #64748b;
   --bs-secondary-rgb: 100, 116, 139;
   --bs-success: #059669;
@@ -68,15 +70,15 @@
   --bs-warning-rgb: 217, 119, 6;
   --bs-danger: #dc2626;
   --bs-danger-rgb: 220, 38, 38;
-  --bs-info: #0284c7;
-  --bs-info-rgb: 2, 132, 199;
+  --bs-info: #0d9488;
+  --bs-info-rgb: 13, 148, 136;
   --bs-body-font-family: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
   --bs-body-color: var(--gray-700);
   --bs-body-bg: var(--bg-page);
   --bs-border-color: var(--border);
   --bs-border-radius: var(--radius-md);
-  --bs-link-color: var(--brand-600);
-  --bs-link-hover-color: var(--brand-700);
+  --bs-link-color: var(--brand-700);
+  --bs-link-hover-color: var(--brand-800);
 
   /* Legacy aliases */
   --eni-primary: var(--brand-800);
@@ -219,7 +221,7 @@ body {
 
 /* ─── Hero banner ─── */
 .hero-banner {
-  background: linear-gradient(135deg, var(--brand-800) 0%, var(--brand-500) 100%);
+  background: linear-gradient(135deg, var(--navbar-bg-dark) 0%, var(--navbar-bg) 100%);
   border-radius: var(--radius-2xl);
   padding: clamp(1.25rem, 4vw, 2rem);
   box-shadow: var(--shadow-lg);
@@ -393,7 +395,7 @@ body {
 .btn-primary {
   background: linear-gradient(135deg, var(--brand-700), var(--brand-500));
   border: none;
-  box-shadow: 0 2px 8px rgb(30 77 140 / 0.25);
+  box-shadow: 0 2px 8px rgb(5 150 105 / 0.25);
 }
 
 .btn-primary:hover,
@@ -401,7 +403,7 @@ body {
   background: linear-gradient(135deg, var(--brand-800), var(--brand-600));
   border: none;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgb(30 77 140 / 0.35);
+  box-shadow: 0 4px 14px rgb(5 150 105 / 0.35);
 }
 
 .btn-outline-primary {
@@ -437,7 +439,7 @@ body {
 .form-control:focus,
 .form-select:focus {
   border-color: var(--brand-400);
-  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.15);
 }
 
 .form-label {
@@ -454,7 +456,7 @@ body {
   font-size: 0.9rem;
 }
 
-.alert-info    { background: var(--info-bg);    color: #075985; }
+.alert-info    { background: var(--info-bg);    color: #115e59; }
 .alert-success { background: var(--success-bg); color: #065f46; }
 .alert-warning { background: var(--warning-bg); color: #92400e; }
 .alert-danger  { background: var(--danger-bg);  color: #991b1b; }
@@ -492,7 +494,7 @@ body {
 
 /* ─── Gradients (Bootstrap compat) ─── */
 .bg-primary.bg-gradient {
-  background: linear-gradient(135deg, var(--brand-800), var(--brand-500)) !important;
+  background: linear-gradient(135deg, var(--navbar-bg-dark), var(--navbar-bg)) !important;
 }
 
 .bg-success.bg-gradient {
@@ -500,10 +502,10 @@ body {
 }
 
 .bg-info.bg-gradient {
-  background: linear-gradient(135deg, #0369a1, var(--info)) !important;
+  background: linear-gradient(135deg, #047857, var(--info)) !important;
 }
 
-.text-primary { color: var(--brand-600) !important; }
+.text-primary { color: var(--brand-700) !important; }
 
 /* ─── QR Scanner ─── */
 #qr-reader {
@@ -523,20 +525,10 @@ body {
   min-height: 100vh;
   display: flex;
   align-items: center;
-  background: linear-gradient(160deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-500) 100%);
+  background: whitesmoke;
   padding: 1.5rem 1rem;
   position: relative;
   overflow: hidden;
-}
-
-.login-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.08) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.06) 0%, transparent 40%);
-  pointer-events: none;
 }
 
 .login-card-pro {
@@ -549,40 +541,31 @@ body {
 }
 
 .login-logo-pro {
-  width: 72px;
-  height: 72px;
   margin: 0 auto 1rem;
-  background: linear-gradient(135deg, var(--brand-700), var(--brand-400));
-  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
-  font-size: 2rem;
-  box-shadow: var(--shadow-md);
+}
+
+.login-logo-pro img {
+  max-height: 90px;
+  max-width: 220px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 /* ─── Register page ─── */
 .register-page {
   min-height: 100vh;
-  background: linear-gradient(160deg, var(--brand-900) 0%, var(--brand-700) 45%, var(--brand-500) 100%);
+  background: whitesmoke;
   padding: 1.25rem 0 2.5rem;
   position: relative;
   overflow-x: hidden;
 }
 
-.register-page::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 15% 85%, rgba(255,255,255,0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 15%, rgba(255,255,255,0.06) 0%, transparent 40%);
-  pointer-events: none;
-}
-
 .register-brand-panel {
-  color: #fff;
+  color: var(--gray-800);
   padding: 2rem 1.5rem;
   position: relative;
   z-index: 1;
@@ -596,7 +579,7 @@ body {
 }
 
 .register-brand-panel p {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--gray-600);
   margin-bottom: 1.5rem;
 }
 
@@ -606,7 +589,7 @@ body {
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.92);
+  color: var(--gray-700);
 }
 
 .register-feature i {

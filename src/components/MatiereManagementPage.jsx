@@ -958,30 +958,6 @@ function MatiereManagementPage({ user }) {
           </Modal.Footer>
         </Form>
       </Modal>
-
-      {/* Informations */}
-      <div className="mt-4 p-3 bg-light rounded">
-        <h6 className="mb-2">
-          <i className="bi bi-info-circle me-2"></i>
-          Informations
-        </h6>
-        <ul className="small text-muted mb-0">
-          <li>Les champs marqués d'un * sont obligatoires</li>
-          <li>Le code matière doit être unique</li>
-          <li>La date de création est automatiquement générée</li>
-          <li>Route API : <code>/api/matiere</code></li>
-          <li>Token JWT requis pour l'authentification</li>
-          <li>La session expire automatiquement après un certain temps</li>
-          <li><strong>Mentions disponibles :</strong> Informatique, Intelligence Artificielle, Expertise Digitale</li>
-          <li><strong>Parcours par mention :</strong>
-            <ul className="mt-1 mb-0">
-              <li>Informatique : GB, IG, ASR</li>
-              <li>Intelligence Artificielle : GID, OCC</li>
-              <li>Expertise Digitale : MDI, ASI</li>
-            </ul>
-          </li>
-        </ul>
-      </div>
     </Container>
   )
 }

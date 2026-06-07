@@ -9,6 +9,7 @@ import MatiereManagementPage from './components/MatiereManagementPage.jsx'
 import QrScanner from './components/QrScanner.jsx'
 import Register from './components/Register.jsx'
 import { apiHelper } from './apis.js'
+import logoEni from './assets/logo_ENI.jpg'
 
 function readStoredUser() {
   try {
@@ -90,7 +91,10 @@ function Shell() {
       {showNavbar && (
         <Navbar expand="lg" className="app-navbar">
           <Container>
-            <Navbar.Brand href="#/dashboard">QR Présence</Navbar.Brand>
+            <Navbar.Brand href="#/dashboard" className="d-flex align-items-center gap-2">
+              <img src={logoEni} alt="Logo ENI" className="navbar-logo" />
+              QR Présence
+            </Navbar.Brand>
             <Navbar.Toggle aria-controls="main-nav" aria-label="Menu" />
             <Navbar.Collapse id="main-nav">
               <Nav className="me-auto">

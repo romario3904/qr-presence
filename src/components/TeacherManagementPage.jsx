@@ -13,6 +13,7 @@ function TeacherManagementPage({ user }) {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [showQRModal, setShowQRModal] = useState(false)
+  const [showCoursModal, setShowCoursModal] = useState(false) // Nouvel état pour le modal du formulaire
   const [generatedQR, setGeneratedQR] = useState(null)
   const [generating, setGenerating] = useState(false)
   
@@ -65,6 +66,30 @@ function TeacherManagementPage({ user }) {
 
     loadTeacherData()
   }, [])
+
+  // Réinitialiser le formulaire
+  const resetForm = () => {
+    setQrFormData({
+      id_matiere: '',
+      date_seance: new Date().toISOString().split('T')[0],
+      heure_debut: '',
+      heure_fin: '',
+      salle: ''
+    })
+  }
+
+  // Ouvrir le modal
+  const handleOpenCoursModal = () => {
+    resetForm()
+    setShowCoursModal(true)
+  }
+
+  // Fermer le modal
+  const handleCloseCoursModal = () => {
+    setShowCoursModal(false)
+    resetForm()
+    setError('')
+  }
 
   const handleGenerateQR = async (e) => {
     e.preventDefault()
@@ -138,26 +163,17 @@ function TeacherManagementPage({ user }) {
         qrCode: qrImage,
         qrData: qrData,
         seance: {
-          nom_matiere: newSeance.nom_matiere,
-          date_seance: qrFormData.date_seance,
-          heure_debut: qrFormData.heure_debut,
-          heure_fin: qrFormData.heure_fin,
-          salle: qrFormData.salle,
+          ...newSeance,
           qr_expire: response.data.qrExpire
         }
       })
       
       setShowQRModal(true)
+      setShowCoursModal(false) // Fermer le modal du formulaire
       setSuccess('QR Code généré avec succès !')
       
       // Réinitialiser le formulaire
-      setQrFormData({
-        id_matiere: '',
-        date_seance: new Date().toISOString().split('T')[0],
-        heure_debut: '',
-        heure_fin: '',
-        salle: ''
-      })
+      resetForm()
       
       setTimeout(() => setSuccess(''), 3000)
       
@@ -307,6 +323,7 @@ function TeacherManagementPage({ user }) {
                 <Button 
                   variant="primary" 
                   className="btn-pill px-4"
+                  onClick={handleOpenCoursModal}
                 >
                   <i className="bi bi-plus-circle me-2"></i>
                   Nouvelle Session
@@ -337,165 +354,11 @@ function TeacherManagementPage({ user }) {
           </Alert>
         )}
 
-        {/* Quick Action Card */}
-        <Row className="mb-5 fade-in-up">
-          <Col>
-            <Card className="border-0 shadow-lg hero-banner overflow-hidden">
-              <Card.Body>
-                <Row className="align-items-center">
-                  <Col lg={8}>
-                    <h3 className="mb-2">
-                      <i className="bi bi-qr-code-scan me-2"></i>
-                      Génération rapide de QR Code
-                    </h3>
-                    <p className="mb-0">
-                      Créez instantanément un QR code pour votre prochaine session de cours
-                    </p>
-                  </Col>
-                  <Col lg={4} className="text-lg-end mt-3 mt-lg-0">
-                    <Button 
-                      variant="light" 
-                      className="btn-pill px-4 py-2 fw-semibold"
-                      onClick={() => document.getElementById('qr-form-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    >
-                      <i className="bi bi-qr-code me-2"></i>
-                      Générer maintenant
-                    </Button>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
         <Row className="g-4">
-          {/* Formulaire de génération QR Code */}
-          <Col lg={5}>
-            <Card className="border-0 shadow-lg app-card h-100 fade-in-up" id="qr-form-section">
-              <Card.Header className="bg-white border-0 pt-4 pb-0">
-                <h5 className="fw-bold mb-0">
-                  <i className="bi bi-qr-code me-2 text-primary"></i>
-                  Nouvelle Session de Cours
-                </h5>
-                <p className="text-muted small mt-1 mb-3">Configurez les détails pour générer votre QR code de présence</p>
-              </Card.Header>
-              <Card.Body className="p-4">
-                <Form onSubmit={handleGenerateQR}>
-                  <Form.Group className="mb-3">
-                    <Form.Label className="fw-semibold">
-                      <i className="bi bi-book me-2 text-primary"></i>
-                      MATIÈRE
-                    </Form.Label>
-                    <Form.Select
-                      className="py-2 rounded-3 border-0 bg-light"
-                      value={qrFormData.id_matiere}
-                      onChange={(e) => setQrFormData({ ...qrFormData, id_matiere: e.target.value })}
-                      required
-                    >
-                      <option value="">Sélectionner une matière</option>
-                      {matieres.map(matiere => (
-                        <option key={matiere.id_matiere} value={matiere.id_matiere}>
-                          {matiere.code_matiere} - {matiere.nom_matiere}
-                        </option>
-                      ))}
-                    </Form.Select>
-                  </Form.Group>
-
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          <i className="bi bi-calendar3 me-2 text-primary"></i>
-                          DATE
-                        </Form.Label>
-                        <Form.Control
-                          type="date"
-                          className="py-2 rounded-3 border-0 bg-light"
-                          value={qrFormData.date_seance}
-                          onChange={(e) => setQrFormData({ ...qrFormData, date_seance: e.target.value })}
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-3">
-                        <Form.Label className="fw-semibold">
-                          <i className="bi bi-building me-2 text-primary"></i>
-                          SALLE
-                        </Form.Label>
-                        <Form.Control
-                          type="text"
-                          placeholder="Ex: Amphi A, Salle 102..."
-                          className="py-2 rounded-3 border-0 bg-light"
-                          value={qrFormData.salle}
-                          onChange={(e) => setQrFormData({ ...qrFormData, salle: e.target.value })}
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Row>
-                    <Col md={6}>
-                      <Form.Group className="mb-4">
-                        <Form.Label className="fw-semibold">
-                          <i className="bi bi-clock me-2 text-primary"></i>
-                          HEURE DÉBUT
-                        </Form.Label>
-                        <Form.Control
-                          type="time"
-                          className="py-2 rounded-3 border-0 bg-light"
-                          value={qrFormData.heure_debut}
-                          onChange={(e) => setQrFormData({ ...qrFormData, heure_debut: e.target.value })}
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                    <Col md={6}>
-                      <Form.Group className="mb-4">
-                        <Form.Label className="fw-semibold">
-                          <i className="bi bi-clock-fill me-2 text-primary"></i>
-                          HEURE FIN
-                        </Form.Label>
-                        <Form.Control
-                          type="time"
-                          className="py-2 rounded-3 border-0 bg-light"
-                          value={qrFormData.heure_fin}
-                          onChange={(e) => setQrFormData({ ...qrFormData, heure_fin: e.target.value })}
-                          required
-                        />
-                      </Form.Group>
-                    </Col>
-                  </Row>
-
-                  <Button
-                    type="submit"
-                    className="w-100 py-3 rounded-3 fw-semibold"
-                    style={{
-                      background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-                      border: 'none'
-                    }}
-                    disabled={generating}
-                  >
-                    {generating ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
-                        Génération...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-qr-code-scan me-2"></i>
-                        Générer le QR Code de présence
-                      </>
-                    )}
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
+          {/* Section d'information */}
 
           {/* Liste des sessions existantes */}
-          <Col lg={7}>
+          <Col lg={12}>
             <Card className="border-0 shadow-lg app-card fade-in-up">
               <Card.Header className="bg-white border-0 pt-4 pb-0">
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -531,7 +394,7 @@ function TeacherManagementPage({ user }) {
                   <div className="text-center py-5">
                     <i className="bi bi-calendar-x display-1 text-muted"></i>
                     <p className="text-muted mt-2">Aucune session de cours</p>
-                    <Button variant="primary" className="rounded-pill mt-2">
+                    <Button variant="primary" className="rounded-pill mt-2" onClick={handleOpenCoursModal}>
                       Créer une première session
                     </Button>
                   </div>
@@ -659,6 +522,149 @@ function TeacherManagementPage({ user }) {
             </Card>
           </Col>
         </Row>
+
+        {/* Modal pour le formulaire de création de cours */}
+        <Modal show={showCoursModal} onHide={handleCloseCoursModal} centered size="lg" className="cours-modal">
+          <Modal.Header closeButton className="border-0 pt-4 px-4">
+            <Modal.Title className="fw-bold">
+              <i className="bi bi-plus-circle text-primary me-2"></i>
+              Nouvelle Session de Cours
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body className="p-4">
+            <p className="text-muted mb-4">
+              Configurez les détails de votre cours pour générer un QR code de présence.
+            </p>
+
+            {error && (
+              <Alert variant="danger" className="rounded-3 mb-4" dismissible onClose={() => setError('')}>
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                {error}
+              </Alert>
+            )}
+
+            <Form onSubmit={handleGenerateQR}>
+              <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">
+                  <i className="bi bi-book me-2 text-primary"></i>
+                  MATIÈRE
+                </Form.Label>
+                <Form.Select
+                  className="py-2 rounded-3 border-0 bg-light"
+                  value={qrFormData.id_matiere}
+                  onChange={(e) => setQrFormData({ ...qrFormData, id_matiere: e.target.value })}
+                  required
+                >
+                  <option value="">Sélectionner une matière</option>
+                  {matieres.map(matiere => (
+                    <option key={matiere.id_matiere} value={matiere.id_matiere}>
+                      {matiere.code_matiere} - {matiere.nom_matiere}
+                    </option>
+                  ))}
+                </Form.Select>
+              </Form.Group>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">
+                      <i className="bi bi-calendar3 me-2 text-primary"></i>
+                      DATE
+                    </Form.Label>
+                    <Form.Control
+                      type="date"
+                      className="py-2 rounded-3 border-0 bg-light"
+                      value={qrFormData.date_seance}
+                      onChange={(e) => setQrFormData({ ...qrFormData, date_seance: e.target.value })}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">
+                      <i className="bi bi-building me-2 text-primary"></i>
+                      SALLE
+                    </Form.Label>
+                    <Form.Control
+                      type="text"
+                      placeholder="Ex: Amphi A, Salle 102..."
+                      className="py-2 rounded-3 border-0 bg-light"
+                      value={qrFormData.salle}
+                      onChange={(e) => setQrFormData({ ...qrFormData, salle: e.target.value })}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <Row>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">
+                      <i className="bi bi-clock me-2 text-primary"></i>
+                      HEURE DÉBUT
+                    </Form.Label>
+                    <Form.Control
+                      type="time"
+                      className="py-2 rounded-3 border-0 bg-light"
+                      value={qrFormData.heure_debut}
+                      onChange={(e) => setQrFormData({ ...qrFormData, heure_debut: e.target.value })}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group className="mb-4">
+                    <Form.Label className="fw-semibold">
+                      <i className="bi bi-clock-fill me-2 text-primary"></i>
+                      HEURE FIN
+                    </Form.Label>
+                    <Form.Control
+                      type="time"
+                      className="py-2 rounded-3 border-0 bg-light"
+                      value={qrFormData.heure_fin}
+                      onChange={(e) => setQrFormData({ ...qrFormData, heure_fin: e.target.value })}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              <div className="d-flex gap-3 justify-content-end mt-4 pt-3 border-top">
+                <Button 
+                  variant="outline-secondary" 
+                  className="rounded-pill px-4"
+                  onClick={handleCloseCoursModal}
+                >
+                  <i className="bi bi-x-lg me-2"></i>
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  className="rounded-pill px-4"
+                  style={{
+                    background: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
+                    border: 'none'
+                  }}
+                  disabled={generating}
+                >
+                  {generating ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2"></span>
+                      Génération...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-qr-code-scan me-2"></i>
+                      Générer le QR Code
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Form>
+          </Modal.Body>
+        </Modal>
 
         {/* Modal QR Code */}
         <Modal show={showQRModal} onHide={() => setShowQRModal(false)} centered size="lg" className="qr-modal">
@@ -880,6 +886,19 @@ function TeacherManagementPage({ user }) {
         
         .qr-code-image:hover {
           transform: scale(1.02);
+        }
+
+        /* Styles pour le modal */
+        .cours-modal .modal-content,
+        .qr-modal .modal-content {
+          border-radius: 1rem;
+          border: none;
+          box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        .cours-modal .modal-header,
+        .qr-modal .modal-header {
+          border-bottom: 1px solid #f3f4f6;
         }
       `}</style>
     </div>

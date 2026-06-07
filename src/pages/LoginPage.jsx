@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap'
 import { apiHelper } from '../apis.js'
+import logoEni from '../assets/logo_ENI.jpg'
 
 export default function LoginPage({ onLoggedIn }) {
   const [form, setForm] = useState({ matricule: '', mot_de_passe: '' })
@@ -49,7 +50,7 @@ export default function LoginPage({ onLoggedIn }) {
               <Card.Body className="p-4 p-md-5">
                 <div className="text-center mb-4">
                   <div className="login-logo-pro">
-                    <i className="bi bi-qr-code-scan" />
+                    <img src={logoEni} alt="Logo ENI" />
                   </div>
                   <h2 className="fw-bold mb-1 text-primary">
                     Connexion
@@ -112,7 +113,7 @@ export default function LoginPage({ onLoggedIn }) {
               </Card.Body>
             </Card>
 
-            <p className="text-center text-white-50 small mt-3 mb-0 opacity-75">
+            <p className="text-center text-muted small mt-3 mb-0">
               QR Présence — Gestion d&apos;assiduité
             </p>
           </Col>

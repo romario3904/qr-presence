@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Form, Button, Card, Alert, Container, Row, Col, Spinner } from 'react-bootstrap'
 import api from '../apis'
+import logoEni from '../assets/logo_ENI.jpg'
 
 const MENTION_HINTS = {
   Informatique: 'Parcours disponibles : GB, IG, ASR',
@@ -199,7 +200,7 @@ function Register({ onLogin, onShowLogin }) {
           <Col lg={5} className="d-none d-lg-block">
             <div className="register-brand-panel">
               <div className="login-logo-pro mb-4" style={{ margin: '0 0 1.5rem' }}>
-                <i className="bi bi-person-plus-fill" />
+                <img src={logoEni} alt="Logo ENI" />
               </div>
               <h1>Rejoignez QR Présence</h1>
               <p>
@@ -237,7 +238,7 @@ function Register({ onLogin, onShowLogin }) {
               <Card.Body>
                 <div className="text-center mb-4 d-lg-none">
                   <div className="login-logo-pro">
-                    <i className="bi bi-person-plus-fill" />
+                    <img src={logoEni} alt="Logo ENI" />
                   </div>
                 </div>
 

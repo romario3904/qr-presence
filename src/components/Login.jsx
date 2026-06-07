@@ -272,7 +272,7 @@ function Login({ onLogin, onShowRegister }) {
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3c72 50%, #2a5298 100%);
+            background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%);
           }
 
           /* Background shapes */
@@ -484,7 +484,7 @@ function Login({ onLogin, onShowRegister }) {
           .form-logo {
             width: 60px;
             height: 60px;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
             border-radius: 15px;
             display: inline-flex;
             align-items: center;
@@ -496,7 +496,7 @@ function Login({ onLogin, onShowRegister }) {
           .form-title {
             font-size: 1.75rem;
             font-weight: 700;
-            color: #1e3c72;
+            color: #047857;
             margin-bottom: 0.5rem;
           }
 
@@ -523,13 +523,13 @@ function Login({ onLogin, onShowRegister }) {
           }
 
           .form-control-lg:focus {
-            border-color: #2a5298;
+            border-color: #059669;
             box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
           }
 
           .forgot-link {
             font-size: 0.8rem;
-            color: #2a5298;
+            color: #059669;
             text-decoration: none;
           }
 
@@ -538,7 +538,7 @@ function Login({ onLogin, onShowRegister }) {
           }
 
           .login-btn {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
             border: none;
             padding: 0.875rem;
             font-size: 1rem;
@@ -561,7 +561,7 @@ function Login({ onLogin, onShowRegister }) {
           }
 
           .register-link button {
-            color: #2a5298;
+            color: #059669;
             font-weight: 600;
             text-decoration: none;
           }
@@ -578,7 +578,7 @@ function Login({ onLogin, onShowRegister }) {
           }
 
           .footer-links a:hover {
-            color: #2a5298;
+            color: #059669;
           }
 
           .version small {

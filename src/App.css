@@ -1,8 +1,8 @@
 /* ─── App shell & navbar ─── */
 .app-navbar {
-  background: linear-gradient(90deg, var(--brand-900) 0%, var(--brand-800) 100%) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 16px rgb(12 31 61 / 0.25);
+  background: linear-gradient(90deg, var(--navbar-bg-dark) 0%, var(--navbar-bg) 100%) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.1);
   padding: 0.5rem 0;
   position: sticky;
   top: 0;
@@ -19,13 +19,11 @@
   gap: 0.5rem;
 }
 
-.app-navbar .navbar-brand::before {
-  content: '';
-  display: inline-block;
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, var(--brand-400), #fff);
-  border-radius: 7px;
+.app-navbar .navbar-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
@@ -67,7 +65,7 @@
 /* Mobile nav collapse */
 @media (max-width: 991.98px) {
   .app-navbar .navbar-collapse {
-    background: var(--brand-900);
+    background: var(--navbar-bg-dark);
     border-radius: var(--radius-lg);
     margin-top: 0.75rem;
     padding: 0.75rem;

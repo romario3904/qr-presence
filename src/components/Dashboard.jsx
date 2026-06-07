@@ -55,39 +55,6 @@ function Dashboard({ user }) {
             </div>
           </Col>
         </Row>
-
-        {/* Quick Actions */}
-        <Row className="mb-5 fade-in-up">
-          <Col>
-            <Card className="border-0 shadow-lg hero-banner">
-              <Card.Body className="p-0">
-                <Row className="align-items-center">
-                  <Col lg={8}>
-                    <h4 className="text-white mb-2">Marquer votre présence</h4>
-                    <p className="text-white-50 mb-0">
-                      Générez votre QR code de présence unique ou scannez un code de salle de classe
-                    </p>
-                  </Col>
-                  <Col lg={4} className="text-end">
-                    <div className="d-flex gap-3 justify-content-lg-end mt-3 mt-lg-0">
-                      <Button variant="light" className="btn-pill px-4 py-2">
-                        <i className="bi bi-qr-code me-2"></i>
-                        Générer QR
-                      </Button>
-                      <Link to="/scan">
-                        <Button variant="outline-light" className="btn-pill px-4 py-2">
-                          <i className="bi bi-camera me-2"></i>
-                          Scanner QR
-                        </Button>
-                      </Link>
-                    </div>
-                  </Col>
-                </Row>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-
         {/* Admin Dashboard */}
         {isAdmin && (
           <>
